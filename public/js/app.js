@@ -131,7 +131,7 @@ export function startBackgrounds() {
     i = (i + 1) % imgs.length;
   };
   show();
-  if (!reduce) setInterval(show, 35000);
+  if (!reduce) setInterval(show, 18000);
 }
 
 /* ---- ticker ---- */
@@ -151,7 +151,7 @@ export async function loadTicker() {
       }
     }
     const text = bits.length ? bits.slice(0, 14).join(' <span class="dot">•</span> ') : 'No live games right now — check back soon';
-    inner.innerHTML = text + ' <span class="dot">•</span> ' + text; // loop seam
+    inner.innerHTML = '<span class="ticker-copy">' + text + ' <span class="dot">•</span></span><span class="ticker-copy" aria-hidden="true">' + text + ' <span class="dot">•</span></span>';
   } catch { inner.textContent = 'Scores unavailable — retrying shortly'; }
 }
 
