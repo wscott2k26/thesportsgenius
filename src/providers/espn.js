@@ -8,12 +8,13 @@ export const LEAGUES = {
   nba:   { sport: 'basketball', league: 'nba',              label: 'NBA',        emoji: '🏀' },
   mlb:   { sport: 'baseball',   league: 'mlb',              label: 'MLB',        emoji: '⚾' },
   nhl:   { sport: 'hockey',     league: 'nhl',              label: 'NHL',        emoji: '🏒' },
+  ncaab: { sport: 'basketball', league: 'mens-college-basketball', label: 'College Basketball', emoji: 'NCAA' },
   ncaaf: { sport: 'football',   league: 'college-football', label: 'College FB', emoji: '🎓' },
 };
 export const LEAGUE_KEYS = Object.keys(LEAGUES);
 
 // Per-league home-field edge used by the picks model.
-export const HOME_EDGE = { nfl: 0.06, nba: 0.05, mlb: 0.03, nhl: 0.04, ncaaf: 0.05 };
+export const HOME_EDGE = { nfl: 0.06, nba: 0.05, mlb: 0.03, nhl: 0.04, ncaaf: 0.05, ncaab: 0.05 };
 
 async function getJson(url, fetchFn = fetch) {
   const res = await fetchFn(url, { headers: UA });

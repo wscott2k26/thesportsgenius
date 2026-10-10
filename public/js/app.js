@@ -116,18 +116,23 @@ export function startBackgrounds() {
   const stage = document.querySelector('.bg-stage');
   if (!stage) return;
   const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
-  // preload
-  BG_FILES.forEach(f => { const i = new Image(); i.src = BG_DIR + f; });
+  // Only load the current/next venue, not 29 full-size photos immediately.
   const imgs = BG_FILES.map(f => {
     const img = document.createElement('img');
-    img.src = BG_DIR + f; img.alt = '';
-    img.onerror = () => img.remove(); // missing bg? skip it, keep rotating
+    img.alt = ''; img.dataset.src = BG_DIR + f;
+    img.onerror = () => { img.dataset.failed = 'true'; img.classList.remove('on'); };
     stage.appendChild(img);
     return img;
   });
+  const loadAt = k => {
+    const img = imgs[k];
+    if (img && !img.src) img.src = img.dataset.src;
+  };
   let i = 0;
   const show = () => {
-    imgs.forEach((el, k) => el.classList.toggle('on', k === i));
+    loadAt(i);
+    imgs.forEach((el, k) => el.classList.toggle('on', k === i && el.dataset.failed !== 'true'));
+    loadAt((i + 1) % imgs.length);
     i = (i + 1) % imgs.length;
   };
   show();
@@ -405,7 +410,7 @@ async function renderSGGames(){
  const query=(e.away.name||e.away.abbr)+' vs '+(e.home.name||e.home.abbr)+' '+e.league+' official live game';
  const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(query);
  const broadcasts=(e.broadcasts||[]).map(x=>esc(x)).join(', ');
- return '<div class="sg-game"><div><strong class="sg-mini-match">'+sgTeamLogo(e.league,e.away.abbr,e.away.logo)+esc(e.away.abbr)+' vs '+sgTeamLogo(e.league,e.home.abbr,e.home.logo)+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small><div class="sg-watch-row"><span>'+ (broadcasts?'TV / Stream: '+broadcasts:'Broadcast not listed')+'</span><a href="'+esc(yt)+'" target="_blank" rel="noopener noreferrer" aria-label="Search YouTube for official coverage of '+esc(e.away.abbr)+' versus '+esc(e.home.abbr)+'">Search YouTube ↗</a></div></div>';
+ return '<div class="sg-game"><div><strong class="sg-mini-match">'+sgTeamLogo(e.league,e.away.abbr,e.away.logo)+esc(e.away.abbr)+' vs '+sgTeamLogo(e.league,e.home.abbr,e.home.logo)+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small><a class="sg-gamecenter-link" href="/game?league='+encodeURIComponent(e.league)+'&id='+encodeURIComponent(e.id)+'">Open Game Center →</a><div class="sg-watch-row"><span>'+ (broadcasts?'TV / Stream: '+broadcasts:'Broadcast not listed')+'</span><a href="'+esc(yt)+'" target="_blank" rel="noopener noreferrer" aria-label="Search YouTube for official coverage of '+esc(e.away.abbr)+' versus '+esc(e.home.abbr)+'">Search YouTube ↗</a></div></div>';
  }).join(''):'<p class="reason">No live or upcoming games right now.</p>';
  }catch{el.textContent='Games unavailable right now. See all scores.'}
 }

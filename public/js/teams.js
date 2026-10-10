@@ -107,3 +107,35 @@ document.addEventListener('DOMContentLoaded', async () => {
   wireSearch();
   loadMy();
 });
+
+function sgSetupReminders(){
+ const button=document.getElementById('sg-alert-enable'),status=document.getElementById('sg-alert-status');
+ if(!button)return;
+ const notified=new Set();
+ async function check(){
+  if(document.visibilityState!=='visible'||Notification.permission!=='granted'||!window.SG?.user)return;
+  try{
+   const {data}=await api('/api/my');const now=Date.now();
+   for(const entry of data.games||[]){
+    const game=entry.event||entry.game||entry;
+    const name=game?.name||game?.shortName||'Your team';
+    const start=Date.parse(game?.date||'');
+    const id=game?.id||name;
+    if(Number.isFinite(start)&&start-now>=0&&start-now<15*60000&&!notified.has(id)){
+     notified.add(id);
+     new Notification('Game starting soon',{body:name+' starts within 15 minutes'});
+    }
+   }
+  }catch{status.textContent='Reminders temporarily unavailable. Retry later.'}
+ }
+ button.onclick=async()=>{
+  if(!('Notification' in window)){status.textContent='This browser does not support page notifications.';return}
+  const permission=await Notification.requestPermission();
+  if(permission!=='granted'){status.textContent='Notifications not enabled; you can still use My Teams.';return}
+  button.disabled=true;button.textContent='Page-Open Reminders Enabled';
+  status.textContent='Leave My Teams open for reminders. Background alerts require a future push integration.';
+  await check();
+  setInterval(check,60000);
+ };
+}
+document.addEventListener('DOMContentLoaded',sgSetupReminders);

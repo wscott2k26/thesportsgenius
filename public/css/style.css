@@ -407,3 +407,14 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 40
 .sg-prelaunch{margin-top:22px;background:rgba(10,12,17,.77)}.sg-prelaunch-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:13px 0}.sg-prelaunch-row strong{color:var(--gold)}.sg-prelaunch-row span{font-size:14px}.sg-prelaunch-row small{color:var(--muted)}
 
 .sg-watch-row{display:flex;gap:8px;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-top:7px;font-size:11px;color:var(--muted)}.sg-watch-row a{color:var(--gold);text-decoration:underline;font-weight:700}.sg-watch-row a:hover{color:#fff}
+
+/* Game Center + narrow viewport release improvements */
+.sg-gamecenter-link{display:inline-block;margin:9px 0;color:var(--gold);font-weight:700;font-size:13px;text-decoration:none}
+.sg-gamecenter-link:hover{text-decoration:underline}
+.sg-center-matchup{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;margin:24px 0}
+.sg-center-team{flex:1;min-width:180px;text-align:center}.sg-center-team img{height:90px;width:90px;object-fit:contain}
+.sg-center-team h2{font-family:var(--serif);font-size:clamp(19px,3vw,29px);margin:9px 0}
+.sg-center-team strong{display:block;color:var(--gold);font-size:28px;margin:8px 0}
+.sg-center-panels{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.sg-center-panels h3{color:var(--gold)}
+@media(max-width:700px){.sg-center-panels{grid-template-columns:1fr}.sg-center-team{min-width:130px}.sg-center-team img{height:64px;width:64px}.sg-center-matchup{gap:10px}.nav{width:calc(100% - 20px);margin:10px auto 0;overflow-wrap:anywhere}.nav nav{justify-content:flex-start;flex-wrap:wrap;gap:10px}.nav a.link{font-size:12px}.ticker{width:calc(100% - 20px)}.sg-picks .card{padding:15px}}

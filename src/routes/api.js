@@ -48,6 +48,36 @@ router.get('/history', async (req, res) => {
   } catch(e){res.status(502).json({error:'historical_scores_unavailable'});}
 });
 
+
+// Game Center: allowlisted league and event ID; no arbitrary upstream URLs.
+router.get('/game', async (req,res) => {
+ const league=String(req.query.league||'').toLowerCase(),id=String(req.query.id||'');
+ if(!LEAGUES[league]||!/^[a-zA-Z0-9_-]{1,64}$/.test(id))return res.status(400).json({error:'invalid_game'});
+ try{
+  const {events,fetchedAt,delayed}=await getScoreboard(league);
+  let game=events.find(e=>e.id===id);
+  if(!game&&/^\d+$/.test(id)){
+   // A match from the last 90 days can be resolved by its supplied YYYYMMDD date.
+   const date=String(req.query.date||'');
+   if(/^\d{8}$/.test(date)){
+    const d=new Date(date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6)+'T12:00:00Z');
+    if(!Number.isNaN(d.getTime())&&Date.now()-d.getTime()>=0&&Date.now()-d.getTime()<=91*86400000)
+      game=(await fetchHistoricalScoreboard(league,date)).find(e=>e.id===id);
+   }
+  }
+  if(!game)return res.status(404).json({error:'game_not_in_current_feed'});
+  const picks=db.prepare('SELECT pick_team,pick_type,confidence,status,issued_at,starts_at FROM picks WHERE league=? AND event_id=? ORDER BY id DESC LIMIT 4').all(league,id);
+  res.json({game,picks,fetchedAt,delayed:!!delayed,coverage:{injuries:false,verifiedFreeStreams:false},note:'Broadcast listings are provider-supplied; free streams are not guaranteed.'});
+ }catch{res.status(502).json({error:'game_data_unavailable'});}
+});
+router.get('/verified-picks.csv',(req,res)=>{
+ const rows=db.prepare("SELECT date,league,event_id,home,away,pick_team,pick_type,line,confidence,status,issued_at,starts_at,graded_at FROM picks WHERE issued_at IS NOT NULL AND starts_at IS NOT NULL AND issued_at < starts_at ORDER BY issued_at DESC LIMIT 1000").all();
+ const cols=['date','league','event_id','home','away','pick_team','pick_type','line','confidence','status','issued_at','starts_at','graded_at'];
+ const safe=v=>{let x=String(v??'');if(/^[=+@-]/.test(x))x="'"+x;return '"'+x.replace(/"/g,'""')+'"';};
+ res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sports-genius-verified-picks.csv"');
+ res.send([cols.join(','),...rows.map(row=>cols.map(k=>safe(row[k])).join(','))].join('\r\n'));
+});
+
 // ---- scores ----
 router.get('/scores', async (req, res) => {
   const league = String(req.query.league || '').toLowerCase();

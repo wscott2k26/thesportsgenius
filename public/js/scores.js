@@ -1,7 +1,7 @@
 /* Scores page: league tabs + live scoreboard cards */
 import { api, esc, fmtTime, isToday, toast } from './app.js';
 
-const LEAGUE_META = { nfl: ['NFL', '🏈'], nba: ['NBA', '🏀'], mlb: ['MLB', '⚾'], nhl: ['NHL', '🏒'], ncaaf: ['College FB', '🎓'] };
+const LEAGUE_META = { nfl: ['NFL', '🏈'], nba: ['NBA', '🏀'], mlb: ['MLB', '⚾'], nhl: ['NHL', '🏒'], ncaab: ['NCAA Basketball', 'NCAA'], ncaaf: ['College FB', '🎓'] };
 let current = 'nfl';
 
 function teamLine(t, isHome) {
@@ -26,6 +26,7 @@ function card(e) {
     <div class="score-row">${teamLine(e.away)}${score(e.away)}</div>
     <div class="score-row">${teamLine(e.home)}${score(e.home)}</div>
     ${meta ? `<div class="delayed-note">${meta}</div>` : ''}
+    <a class="sg-gamecenter-link" href="/game?league=${encodeURIComponent(current)}&id=${encodeURIComponent(e.id)}&date=${encodeURIComponent(String(e.date).slice(0,10).replaceAll('-',''))}">Open Game Center →</a>
   </div>`;
 }
 
