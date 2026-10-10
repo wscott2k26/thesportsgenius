@@ -1,0 +1,49 @@
+name: Anchor Sports Genius prediction proofs
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "11 * * * *"
+permissions:
+  contents: write
+jobs:
+  stamp:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Switch to proof branch
+        run: |
+          git fetch origin proof-ledger || true
+          git checkout -B proof-ledger origin/proof-ledger || git checkout -b proof-ledger
+      - name: Fetch ledger root
+        id: digest
+        run: |
+          python3 - <<'PY'
+          import json,os,urllib.request,datetime
+          with urllib.request.urlopen('https://sports-genius-web-production.up.railway.app/api/ledger-integrity',timeout=20) as resp:
+              p=json.load(resp)
+          if not p.get('valid') or not p.get('count'):
+              print('No valid prediction records to anchor yet')
+              raise SystemExit(0)
+          stamp=datetime.datetime.now(datetime.timezone.utc).strftime('%Y%m%dT%H%M%SZ')
+          os.makedirs('proofs',exist_ok=True)
+          path='proofs/'+stamp+'.json'
+          with open(path,'w') as f:
+              json.dump({'anchoredAt':stamp,'root':p['root'],'count':p['count']},f,sort_keys=True)
+          with open(os.environ['GITHUB_OUTPUT'],'a') as f:
+              print('proof='+path,file=f)
+          PY
+      - name: Submit to OpenTimestamps calendars
+        if: steps.digest.outputs.proof != ''
+        run: |
+          pip install opentimestamps-client
+          ots stamp "${{ steps.digest.outputs.proof }}"
+      - name: Publish third-party timestamp receipt
+        if: steps.digest.outputs.proof != ''
+        run: |
+          git config user.name "sports-genius-proof-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add proofs/
+          git commit -m "Anchor ${{ steps.digest.outputs.proof }}" || exit 0
+          git push origin HEAD:proof-ledger
