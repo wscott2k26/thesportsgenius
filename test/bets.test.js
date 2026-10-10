@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 // Bet tracker tests: summary math + CRUD API (auth-gated, user-isolated).
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -26,7 +27,7 @@ before(async () => {
   db.prepare('DELETE FROM offers').run();
   await new Promise((r) => { server = app.listen(0, r); });
   base = `http://127.0.0.1:${server.address().port}`;
-  process.chdir(new URL('..', import.meta.url).pathname);
+  process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 });
 after(() => new Promise((r) => server.close(r)));
 

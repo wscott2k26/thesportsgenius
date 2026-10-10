@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 // Affiliate monetization + compliance tests.
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -28,7 +29,7 @@ before(async () => {
   db.prepare('DELETE FROM affiliate_clicks').run();
   await new Promise((r) => { server = app.listen(0, r); });
   base = `http://127.0.0.1:${server.address().port}`;
-  process.chdir(new URL('..', import.meta.url).pathname);
+  process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 });
 after(() => new Promise((r) => server.close(r)));
 

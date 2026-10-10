@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 // API tests: auth, picks shape, chat fallback, favorites, premium gating.
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
@@ -27,7 +28,7 @@ before(async () => {
   await new Promise((r) => { server = app.listen(0, r); });
   base = `http://127.0.0.1:${server.address().port}`;
   // run from project root so express.static finds ./public
-  process.chdir(new URL('..', import.meta.url).pathname);
+  process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 });
 after(() => new Promise((r) => server.close(r)));
 
@@ -83,7 +84,7 @@ describe('picks API', () => {
   });
   it('free tier only gets 2 leagues', async () => {
     const { data } = await req('GET', '/api/picks');
-    assert.deepEqual(data.lockedLeagues.sort(), ['mlb', 'ncaaf', 'nhl']);
+    assert.deepEqual(data.lockedLeagues.sort(), ['mlb', 'ncaab', 'ncaaf', 'nhl']);
   });
   it('track-record starts calibrating', async () => {
     const { data } = await req('GET', '/api/track-record');

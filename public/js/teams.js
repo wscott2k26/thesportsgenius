@@ -119,7 +119,7 @@ function sgSetupReminders(){
    for(const entry of data.games||[]){
     const game=entry.event||entry.game||entry;
     const name=game?.name||game?.shortName||'Your team';
-    const start=Date.parse(game?.date||'');
+    const start=Date.parse(game?.date||entry?.date||'');
     const id=game?.id||name;
     if(Number.isFinite(start)&&start-now>=0&&start-now<15*60000&&!notified.has(id)){
      notified.add(id);

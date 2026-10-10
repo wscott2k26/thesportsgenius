@@ -9,8 +9,8 @@ import { installStub, scoreboardJSON, scoreboardEvent, KC, BUF } from './fixture
 const TODAY = todayET();
 
 function seedPick(date, league, eventId, pickAbbr, status) {
-  db.prepare(`INSERT INTO picks (date, league, event_id, home, away, pick_team, confidence, reasoning, status)
-    VALUES (?, ?, ?, 'KC Kansas City Chiefs', 'BUF Buffalo Bills', ?, 70, 'test', ?)`)
+  db.prepare(`INSERT INTO picks (date, league, event_id, home, away, pick_team, confidence, reasoning, status, issued_at, starts_at)
+    VALUES (?, ?, ?, 'KC Kansas City Chiefs', 'BUF Buffalo Bills', ?, 70, 'test', ?, '2026-01-01T10:00:00Z', '2026-12-31T20:00:00Z')`)
     .run(date, league, eventId, `${pickAbbr} Team`, status);
 }
 

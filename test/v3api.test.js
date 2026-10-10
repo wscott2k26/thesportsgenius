@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 // v3 API route tests: movement, alerts (incl. my-teams filtering), splits,
 // props — graceful behavior with no Odds API key configured.
 import { describe, it, before, after, beforeEach } from 'node:test';
@@ -25,7 +26,7 @@ before(async () => {
   db.prepare('DELETE FROM odds_history').run();
   await new Promise((r) => { server = app.listen(0, r); });
   base = `http://127.0.0.1:${server.address().port}`;
-  process.chdir(new URL('..', import.meta.url).pathname);
+  process.chdir(fileURLToPath(new URL('..', import.meta.url)));
 });
 after(() => new Promise((r) => server.close(r)));
 beforeEach(() => { db.prepare('DELETE FROM odds_history').run(); });
