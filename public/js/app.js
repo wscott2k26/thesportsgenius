@@ -1,5 +1,5 @@
 /* Shared: stadium bg rotation, auth state, ticker, toast, home picks + ask preview */
-const BG_FILES = ['bg-nfl.jpg', 'bg-nba.jpg', 'bg-mlb.jpg', 'bg-soccer.jpg', 'bg-hockey.jpg', 'bg-tennis.jpg'];
+const BG_FILES = ['bg-nfl.jpg', 'bg-nba.jpg', 'bg-mlb.jpg', 'bg-soccer.jpg', 'bg-hockey.jpg', 'bg-tennis.jpg', 'bg-extra-02.jpg', 'bg-extra-03.jpg', 'bg-extra-04.jpg', 'bg-extra-05.jpg', 'bg-extra-06.jpg', 'bg-extra-07.jpg', 'bg-extra-08.jpg', 'bg-extra-10.jpg'];
 const BG_DIR = '/bg/';
 
 export function toast(msg) {

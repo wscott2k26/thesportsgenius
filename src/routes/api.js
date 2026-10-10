@@ -1,7 +1,7 @@
 // Public + user API routes.
 import { Router } from 'express';
 import { db, todayET, isPremium } from '../db.js';
-import { getScoreboard, getStandings, getTeams, fetchNews, LEAGUE_KEYS, LEAGUES } from '../providers/espn.js';
+import { getScoreboard, fetchHistoricalScoreboard, getStandings, getTeams, fetchNews, LEAGUE_KEYS, LEAGUES } from '../providers/espn.js';
 import { getPicks, trackRecord, DISCLAIMER } from '../picks.js';
 import { handleChat, FREE_CHATS_PER_DAY } from '../chat.js';
 import { getOdds, oddsAvailable, findOddsForPick, bestMoneyline, matchAffiliate, profitFor, getEventProps } from '../providers/odds.js';
@@ -21,6 +21,31 @@ router.get('/health', (req, res) => res.json({ ok: true, time: new Date().toISOS
 
 router.get('/leagues', (req, res) => {
   res.json({ leagues: LEAGUE_KEYS.map(k => ({ key: k, ...LEAGUES[k], free: FREE_LEAGUES.includes(k) })) });
+});
+
+
+// Historical completed scores only; these are NOT retrospective predictions.
+// Fetching one selected date keeps upstream data use bounded and honest.
+const historicalCache = new Map();
+router.get('/history', async (req, res) => {
+  const league = String(req.query.league || 'nba').toLowerCase();
+  const date = String(req.query.date || '');
+  if (!LEAGUES[league]) return res.status(400).json({ error: 'unknown_league' });
+  if (!/^\d{8}$/.test(date)) return res.status(400).json({ error: 'date_must_be_yyyymmdd' });
+  const parsed = new Date(date.slice(0,4)+'-'+date.slice(4,6)+'-'+date.slice(6)+'T12:00:00Z');
+  const day = parsed.toISOString().slice(0,10).replace(/-/g,'');
+  const age = (Date.now()-parsed.getTime())/86400000;
+  if (day !== date || age < 0 || age > 91) return res.status(400).json({ error: 'date_outside_last_90_days' });
+  const key=league+':'+date;
+  const old=historicalCache.get(key);
+  if (old && Date.now()-old.time < 3600000) return res.json(old.data);
+  try {
+    const games = (await fetchHistoricalScoreboard(league,date)).filter(g => g.status.state === 'post');
+    const data = { league, date, games, count:games.length, type:'historical_final_results', backtest:false, note:'These are completed games, not picks our model issued before kickoff.' };
+    historicalCache.set(key,{time:Date.now(),data});
+    if(historicalCache.size>100)historicalCache.delete(historicalCache.keys().next().value);
+    res.json(data);
+  } catch(e){res.status(502).json({error:'historical_scores_unavailable'});}
 });
 
 // ---- scores ----

@@ -245,3 +245,12 @@ export async function getTeams(leagueKey, opts = {}) {
 }
 
 export function clearCache() { cache.clear(); }
+
+
+export async function fetchHistoricalScoreboard(leagueKey, yyyymmdd, { fetchFn = fetch } = {}) {
+  const l = LEAGUES[leagueKey];
+  if (!l) throw new Error('unknown_league');
+  const url = BASE + '/' + l.sport + '/' + l.league + '/scoreboard?dates=' + encodeURIComponent(yyyymmdd) + '&limit=300';
+  const data = await getJson(url, fetchFn);
+  return (data.events || []).map(e => normalizeEvent(e, leagueKey));
+}
