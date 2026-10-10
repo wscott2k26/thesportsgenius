@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bet Tracker — The Sports Genius</title>
+<meta name="description" content="Track your bets: record, ROI, units. 21+.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="bg-stage" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="/"><span class="mark">🧠</span><b>THE SPORTS GENIUS</b></a>
+  <span class="age-badge">21+</span>
+  <nav>
+    <a class="link" href="/">Picks</a>
+    <a class="link" href="/scores">Scores</a>
+    <a class="link" href="/parlay">Parlay</a>
+    <a class="link" href="/offers">Offers</a>
+    <a class="link active" href="/tracker">Tracker</a>
+    <a class="link" href="/alerts">Alerts</a>
+    <a class="link" href="/splits">Splits</a>
+    <a class="link" href="/chat">Chat</a>
+    <a class="link" href="/teams">My Teams</a>
+  </nav>
+  <div id="nav-auth" style="display:flex;gap:10px;align-items:center"></div>
+</header>
+
+<div class="ticker"><span class="ticker-inner">Loading scores…</span></div>
+
+<div class="wrap">
+  <h1 class="display" style="font-size:clamp(30px,5vw,52px)">BET TRACKER</h1>
+  <p class="sec-sub">Your private ledger — log every bet, see your real record, ROI, and units. Sign in to use it.</p>
+
+  <div id="need-login" class="card" style="display:none">
+    <p class="reason">The tracker is personal — <b>sign in</b> (top right) to log and grade your bets.</p>
+  </div>
+
+  <div id="tracker-app" style="display:none">
+    <div class="stat-tiles" id="stat-tiles"></div>
+
+    <div class="two-col">
+      <div>
+        <h2 class="sec-title" style="font-size:24px;margin-top:0">Your bets</h2>
+        <div class="card" style="padding:8px 14px;overflow-x:auto">
+          <table class="bet-table" id="bet-table">
+            <thead><tr><th>Date</th><th>Bet</th><th>Stake</th><th>Odds</th><th>Result</th><th></th></tr></thead>
+            <tbody><tr><td colspan="6" class="reason">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+      <aside class="card">
+        <h3 style="font-family:var(--serif);color:var(--gold);margin:0 0 12px;letter-spacing:0.1em">LOG A BET</h3>
+        <form id="bet-form">
+          <div class="form-grid">
+            <div class="field"><label>Date</label><input type="date" name="date" required></div>
+            <div class="field"><label>League</label>
+              <select name="league"><option value="">—</option><option>NFL</option><option>NBA</option><option>MLB</option><option>NHL</option><option>CFB</option><option>Other</option></select>
+            </div>
+          </div>
+          <div class="field"><label>Matchup</label><input name="matchup" placeholder="Chiefs vs Bills" required maxlength="120"></div>
+          <div class="form-grid">
+            <div class="field"><label>Bet type</label>
+              <select name="bet_type"><option value="moneyline">Moneyline</option><option value="spread">Spread</option><option value="total">Total</option><option value="parlay">Parlay</option></select>
+            </div>
+            <div class="field"><label>Selection</label><input name="selection" placeholder="Chiefs -3.5" required maxlength="120"></div>
+          </div>
+          <div class="form-grid">
+            <div class="field"><label>Sportsbook</label><input name="book" placeholder="DraftKings" maxlength="60"></div>
+            <div class="field"><label>Stake ($)</label><input type="number" name="stake" min="0.01" step="0.01" placeholder="25" required></div>
+          </div>
+          <div class="field"><label>Odds (American)</label><input type="number" name="odds" step="1" placeholder="-110" required></div>
+          <button class="btn-gold" style="width:100%">Log bet</button>
+          <p class="err" id="bet-err"></p>
+        </form>
+      </aside>
+    </div>
+  </div>
+
+  <p class="disclaimer">21+. Gambling problem? Call or text 1-800-GAMBLER. This tracker is a personal record-keeping tool — not gambling advice.</p>
+</div>
+
+<div class="modal-veil" id="auth-modal">
+  <div class="card modal">
+    <div data-mode-login>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Sign in</h2>
+      <form data-form="login">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password</label><input name="password" type="password" required></div>
+        <button class="btn-gold" style="width:100%">Sign in</button>
+      </form>
+      <p class="sec-sub">New here? <a href="#" data-switch="register" style="color:var(--gold)">Create an account</a></p>
+    </div>
+    <div data-mode-register>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Join free</h2>
+      <form data-form="register">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password (8+ chars)</label><input name="password" type="password" minlength="8" required></div>
+        <button class="btn-gold" style="width:100%">Create account</button>
+      </form>
+      <p class="sec-sub">Already a member? <a href="#" data-switch="login" style="color:var(--gold)">Sign in</a></p>
+    </div>
+    <p class="err"></p>
+  </div>
+</div>
+
+<footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
+<script type="module" src="/js/app.js"></script>
+<script type="module" src="/js/tracker.js"></script>
+</body>
+</html>

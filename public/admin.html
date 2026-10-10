@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Admin — The Sports Genius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="bg-stage" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="/"><span class="mark">🧠</span><b>THE SPORTS GENIUS</b></a>
+  <span class="age-badge">21+</span>
+  <nav>
+    <a class="link" href="/">Picks</a>
+    <a class="link" href="/scores">Scores</a>
+    <a class="link" href="/parlay">Parlay</a>
+    <a class="link" href="/offers">Offers</a>
+    <a class="link" href="/tracker">Tracker</a>
+    <a class="link" href="/alerts">Alerts</a>
+    <a class="link" href="/splits">Splits</a>
+    <a class="link" href="/chat">Chat</a>
+    <a class="link" href="/teams">My Teams</a>
+  </nav>
+  <div id="nav-auth" style="display:flex;gap:10px;align-items:center"></div>
+</header>
+
+<div class="wrap">
+  <div id="admin-gate"><div class="card"><p class="reason">Checking admin access…</p></div></div>
+
+  <div id="admin-body" style="display:none">
+    <h1 class="display" style="font-size:clamp(30px,5vw,52px)">ADMIN</h1>
+
+    <h2 class="sec-title" style="font-size:24px">Sportsbook affiliate links</h2>
+    <p class="sec-sub">These render next to every pick as "Bet this at [Sportsbook]" buttons and in the homepage "Sportsbook offers" section. <b>Apply to each sportsbook's affiliate program yourself</b> (DraftKings, FanDuel, etc.) and paste your real tracking URLs here — the defaults are placeholders.</p>
+    <div class="card" style="margin-bottom:20px">
+      <div id="aff-list"></div>
+      <h3 style="color:var(--gold);margin-top:18px">Add sportsbook</h3>
+      <div class="field"><label>Name</label><input id="af-name" placeholder="DraftKings"></div>
+      <div class="field"><label>Affiliate URL (https://…)</label><input id="af-url" placeholder="https://sportsbook.draftkings.com/...?w=..."></div>
+      <div class="field"><label>Bonus / promo text</label><input id="af-promo" placeholder="Bet $5, get $200 in bonus bets"></div>
+      <div class="field"><label>Priority (lower shows first)</label><input id="af-priority" type="number" value="0"></div>
+      <button class="btn-gold" id="af-add">Add affiliate</button>
+      <p class="err" id="af-err"></p>
+    </div>
+
+    <h2 class="sec-title" style="font-size:24px">Promo offers wall</h2>
+    <p class="sec-sub">Bonus offers shown on the <a href="/offers" style="color:var(--gold)">/offers</a> page. Link each offer to one of your affiliate sportsbooks above (clicks get tracked), or paste a direct URL.</p>
+    <div class="card" style="margin-bottom:20px">
+      <div id="offer-list"></div>
+      <h3 style="color:var(--gold);margin-top:18px">Add offer</h3>
+      <div class="field"><label>Sportsbook name</label><input id="of-book" placeholder="DraftKings"></div>
+      <div class="field"><label>Offer title</label><input id="of-title" placeholder="Bet $5, get $200 in bonus bets"></div>
+      <div class="field"><label>Terms (small print)</label><input id="of-terms" placeholder="21+. New customers. Min deposit $5. T&Cs apply."></div>
+      <div class="field"><label>Promo code (optional)</label><input id="of-code" placeholder="GENIUS200"></div>
+      <div class="field"><label>Link via affiliate</label><select id="of-aff"><option value="">— none (use direct URL) —</option></select></div>
+      <div class="field"><label>…or direct URL</label><input id="of-url" placeholder="https://…"></div>
+      <div class="field"><label>Priority (lower shows first)</label><input id="of-priority" type="number" value="0"></div>
+      <button class="btn-gold" id="of-add">Add offer</button>
+      <p class="err" id="of-err"></p>
+    </div>
+
+    <h2 class="sec-title" style="font-size:24px">Click reporting</h2>
+    <div class="card"><div id="click-report"><p class="reason">Loading…</p></div></div>
+
+    <h2 class="sec-title" style="font-size:24px">Grant Premium</h2>
+    <div class="card">
+      <p class="sec-sub">After a Stripe payment completes, grant Premium here (or wire a Stripe webhook later).</p>
+      <div class="search-row">
+        <input id="grant-email" type="email" placeholder="user@email.com">
+        <button class="btn-gold" id="grant-btn">Grant 30 days</button>
+      </div>
+      <p class="err" id="grant-err"></p>
+    </div>
+  </div>
+</div>
+
+<footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
+<script type="module" src="/js/app.js"></script>
+<script type="module" src="/js/admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Parlay Builder — The Sports Genius</title>
+<meta name="description" content="Build a parlay from live lines. 21+.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="bg-stage" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="/"><span class="mark">🧠</span><b>THE SPORTS GENIUS</b></a>
+  <span class="age-badge">21+</span>
+  <nav>
+    <a class="link" href="/">Picks</a>
+    <a class="link" href="/scores">Scores</a>
+    <a class="link active" href="/parlay">Parlay</a>
+    <a class="link" href="/offers">Offers</a>
+    <a class="link" href="/tracker">Tracker</a>
+    <a class="link" href="/alerts">Alerts</a>
+    <a class="link" href="/splits">Splits</a>
+    <a class="link" href="/chat">Chat</a>
+    <a class="link" href="/teams">My Teams</a>
+  </nav>
+  <div id="nav-auth" style="display:flex;gap:10px;align-items:center"></div>
+</header>
+
+<div class="ticker"><span class="ticker-inner">Loading scores…</span></div>
+
+<div class="wrap">
+  <h1 class="display" style="font-size:clamp(30px,5vw,52px)">PARLAY BUILDER</h1>
+  <p class="sec-sub">Pick 2–6 legs from live lines. One leg per game keeps the math honest. Combined odds are computed straight from the books' lines — books apply their own parlay pricing at checkout.</p>
+
+  <div id="no-lines" class="card" style="display:none">
+    <p class="reason">Live lines aren't wired up yet — the site needs an Odds API key before the parlay builder can price legs. (Admin: set <b>ODDS_API_KEY</b>.)</p>
+  </div>
+
+  <div id="builder" style="display:none">
+    <h2 class="sec-title" style="font-size:24px;margin-top:10px">Risk profile</h2>
+    <div class="risk-row" id="risk-row">
+      <button class="btn-ghost risk-btn on" data-risk="conservative">🛡️ Conservative<br><span style="font-size:12px;color:var(--muted)">Genius favorites</span></button>
+      <button class="btn-ghost risk-btn" data-risk="balanced">⚖️ Balanced<br><span style="font-size:12px;color:var(--muted)">Mix it up</span></button>
+      <button class="btn-ghost risk-btn" data-risk="moonshot">🌙 Moonshot<br><span style="font-size:12px;color:var(--muted)">Long shots only</span></button>
+    </div>
+    <button class="btn-gold" id="auto-build" style="margin-bottom:8px">✨ Auto-build my parlay</button>
+
+    <div class="two-col" style="margin-top:18px">
+      <div>
+        <h2 class="sec-title" style="font-size:24px;margin-top:0">Today's legs</h2>
+        <div class="leg-pool" id="leg-pool"><div class="card"><p class="reason">Loading live lines…</p></div></div>
+
+        <h2 class="sec-title" style="font-size:24px">Player props</h2>
+        <p class="sec-sub">Live player-prop lines, shopped across books. Prop coverage varies by game and sportsbook — what's listed is real market data.</p>
+        <div class="card" style="margin-bottom:14px">
+          <div class="field"><label>Game</label><select id="props-game" style="width:100%"></select></div>
+          <div style="margin-top:10px"><button class="btn-gold" id="props-load">Load props</button></div>
+        </div>
+        <div class="leg-pool" id="props-pool"></div>
+      </div>
+      <aside class="card slip">
+        <h3 style="font-family:var(--serif);color:var(--gold);margin:0 0 6px;letter-spacing:0.1em">BET SLIP</h3>
+        <div id="slip-legs"><p class="sec-sub">No legs yet — tap legs on the left (2–6).</p></div>
+        <div class="slip-total" id="slip-total" style="display:none">
+          <span>Combined odds<br><span style="font-size:11px;color:var(--muted)" id="slip-book"></span></span>
+          <span class="big" id="slip-odds"></span>
+        </div>
+        <div id="slip-books" style="margin-top:14px"></div>
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button class="btn-ghost" id="copy-slip" style="flex:1">📋 Copy slip</button>
+          <button class="btn-ghost" id="clear-slip" style="flex:1">Clear</button>
+        </div>
+        <p class="lines-note" style="margin-top:12px">21+. Gambling problem? Call or text 1-800-GAMBLER. For entertainment — not a placed bet.</p>
+      </aside>
+    </div>
+  </div>
+
+  <p class="disclaimer">Parlay odds are the honest product of each leg's live line. Same-game legs are limited to one per game to keep the math clean.</p>
+</div>
+
+<div class="modal-veil" id="auth-modal">
+  <div class="card modal">
+    <div data-mode-login>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Sign in</h2>
+      <form data-form="login">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password</label><input name="password" type="password" required></div>
+        <button class="btn-gold" style="width:100%">Sign in</button>
+      </form>
+      <p class="sec-sub">New here? <a href="#" data-switch="register" style="color:var(--gold)">Create an account</a></p>
+    </div>
+    <div data-mode-register>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Join free</h2>
+      <form data-form="register">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password (8+ chars)</label><input name="password" type="password" minlength="8" required></div>
+        <button class="btn-gold" style="width:100%">Create account</button>
+      </form>
+      <p class="sec-sub">Already a member? <a href="#" data-switch="login" style="color:var(--gold)">Sign in</a></p>
+    </div>
+    <p class="err"></p>
+  </div>
+</div>
+
+<footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
+<script type="module" src="/js/app.js"></script>
+<script type="module" src="/js/parlay.js"></script>
+</body>
+</html>

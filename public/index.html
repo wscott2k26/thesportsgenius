@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Sports Genius — AI Sports Predictions</title>
+<meta name="description" content="Data-driven sports predictions, live scores, and an AI genius to talk sports with.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="bg-stage" aria-hidden="true"></div>
+<div class="bg-veil" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="brand" href="/"><span class="mark">🧠</span><b>THE SPORTS GENIUS</b></a>
+  <span class="age-badge">21+</span>
+  <nav>
+    <a class="link active" href="/">Picks</a>
+    <a class="link" href="/scores">Scores</a>
+    <a class="link" href="/parlay">Parlay</a>
+    <a class="link" href="/offers">Offers</a>
+    <a class="link" href="/tracker">Tracker</a>
+    <a class="link" href="/alerts">Alerts</a>
+    <a class="link" href="/splits">Splits</a>
+    <a class="link" href="/chat">Chat</a>
+    <a class="link" href="/teams">My Teams</a>
+  </nav>
+  <div id="nav-auth" style="display:flex;gap:10px;align-items:center"></div>
+</header>
+
+<div class="ticker"><span class="ticker-inner">Loading scores…</span></div>
+
+<div class="wrap">
+  <section class="hero">
+    <span class="badge" id="track-badge"><span class="check">✓</span> Verified track record: loading…</span>
+    <h1 class="display">TODAY'S GENIUS PICKS</h1>
+    <p class="sub">Data-driven predictions, generated fresh every morning from live records, standings, and streaks — moneyline and spread picks with live line shopping. Real market lines only, never invented.</p>
+  </section>
+
+  <div class="home-cols">
+    <div>
+      <section id="best-bets" style="display:none"></section>
+      <div class="grid" id="picks-grid"><div class="card"><p class="reason">Loading today's picks…</p></div></div>
+      <p id="locked-note" class="sec-sub" style="display:none;margin-top:18px"></p>
+    </div>
+    <aside class="card ask-panel">
+      <h3>🧠 ASK THE GENIUS</h3>
+      <p class="ask-preview">Get instant insight on any matchup — live scores, records, standings, and today's picks.</p>
+      <div class="ask-preview"><b>Q:</b> Who has the edge tonight, Chiefs or Bills?</div>
+      <a class="btn-gold" href="/chat" style="width:100%;text-align:center">Ask the Genius</a>
+    </aside>
+  </div>
+
+  <section id="offers-section" style="display:none;margin-top:44px"></section>
+
+  <p class="disclaimer">Picks come from a transparent heuristic model (records + home edge + streaks), not a crystal ball. For entertainment. Not gambling advice.</p>
+</div>
+
+<div class="modal-veil" id="auth-modal">
+  <div class="card modal">
+    <div data-mode-login>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Sign in</h2>
+      <form data-form="login">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password</label><input name="password" type="password" required></div>
+        <button class="btn-gold" style="width:100%">Sign in</button>
+      </form>
+      <p class="sec-sub">New here? <a href="#" data-switch="register" style="color:var(--gold)">Create an account</a></p>
+    </div>
+    <div data-mode-register>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Join free</h2>
+      <form data-form="register">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password (8+ chars)</label><input name="password" type="password" minlength="8" required></div>
+        <button class="btn-gold" style="width:100%">Create account</button>
+      </form>
+      <p class="sec-sub">Already a member? <a href="#" data-switch="login" style="color:var(--gold)">Sign in</a></p>
+    </div>
+    <p class="err"></p>
+  </div>
+</div>
+
+<footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
+<script type="module" src="/js/app.js"></script>
+</body>
+</html>
