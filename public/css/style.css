@@ -41,7 +41,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .bg-stage img.on { animation: none; transform: scale(1.05); }
   .bg-stage img { transition: opacity 0.3s; }
-  .ticker-inner { animation: none !important; }
+  /* Score ticker remains animated when explicitly requested by the visitor. */
 }
 
 /* ---- shell ---- */
