@@ -131,7 +131,7 @@ export function startBackgrounds() {
     i = (i + 1) % imgs.length;
   };
   show();
-  setInterval(show, 30000); // Always rotate photos; reduced motion only suppresses Ken Burns zoom.
+  setInterval(show, 25000); // Always rotate photos; reduced motion only suppresses Ken Burns zoom.
 }
 
 /* ---- ticker ---- */
@@ -401,7 +401,12 @@ async function renderSGGames(){
  const {data}=await api('/api/scores');
  const games=Object.entries(data.leagues||{}).flatMap(([league,info])=>(info.events||[]).filter(e=>e.status.state==='in'||(e.status.state==='pre'&&isToday(e.date))).map(e=>({...e,league})));
  games.sort((a,b)=>(a.status.state==='in'?0:1)-(b.status.state==='in'?0:1)||new Date(a.date)-new Date(b.date));
- el.innerHTML=games.length?games.slice(0,5).map(e=>'<div class="sg-game"><div><strong class="sg-mini-match">'+sgTeamLogo(e.league,e.away.abbr,e.away.logo)+esc(e.away.abbr)+' vs '+sgTeamLogo(e.league,e.home.abbr,e.home.logo)+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small></div>').join(''):'<p class="reason">No live or upcoming games right now.</p>';
+ el.innerHTML=games.length?games.slice(0,5).map(e=>{
+ const query=(e.away.name||e.away.abbr)+' vs '+(e.home.name||e.home.abbr)+' '+e.league+' official live game';
+ const yt='https://www.youtube.com/results?search_query='+encodeURIComponent(query);
+ const broadcasts=(e.broadcasts||[]).map(x=>esc(x)).join(', ');
+ return '<div class="sg-game"><div><strong class="sg-mini-match">'+sgTeamLogo(e.league,e.away.abbr,e.away.logo)+esc(e.away.abbr)+' vs '+sgTeamLogo(e.league,e.home.abbr,e.home.logo)+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small><div class="sg-watch-row"><span>'+ (broadcasts?'TV / Stream: '+broadcasts:'Broadcast not listed')+'</span><a href="'+esc(yt)+'" target="_blank" rel="noopener noreferrer" aria-label="Search YouTube for official coverage of '+esc(e.away.abbr)+' versus '+esc(e.home.abbr)+'">Search YouTube ↗</a></div></div>';
+ }).join(''):'<p class="reason">No live or upcoming games right now.</p>';
  }catch{el.textContent='Games unavailable right now. See all scores.'}
 }
 
