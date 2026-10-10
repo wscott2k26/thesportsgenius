@@ -188,6 +188,14 @@ router.get('/prelaunch-record', (req, res) => res.json({
   notice:'Prelaunch record is user-attested and excluded from the verified live-model win rate.'
 }));
 
+
+router.get('/verified-picks', (req,res) => {
+ const rows=db.prepare(`SELECT id,date,league,home,away,pick_team,pick_type,line,confidence,status,issued_at,starts_at,graded_at
+ FROM picks WHERE issued_at IS NOT NULL AND starts_at IS NOT NULL AND issued_at < starts_at
+ ORDER BY date DESC,id DESC LIMIT 40`).all();
+ res.json({type:'system-timestamped-pregame-picks',picks:rows});
+});
+
 router.get('/track-record', (req, res) => {
   res.json(trackRecord());
 });

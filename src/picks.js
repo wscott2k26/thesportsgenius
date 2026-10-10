@@ -9,7 +9,7 @@
 // project scores, so it issues no total picks; totals are shown for line
 // shopping and parlays only.
 import { db, todayET } from './db.js';
-import { getScoreboard, getStandings, LEAGUES, LEAGUE_KEYS, HOME_EDGE } from './providers/espn.js';
+import { getScoreboard, fetchHistoricalScoreboard, getStandings, LEAGUES, LEAGUE_KEYS, HOME_EDGE } from './providers/espn.js';
 import { getOdds, oddsAvailable, findOddsForPick, bestSpread, formatSpread } from './providers/odds.js';
 
 export function parseRecord(rec) {
@@ -101,8 +101,8 @@ export async function getPicks(dateStr = todayET(), leagues = LEAGUE_KEYS) {
 async function generatePicks(dateStr, leagues) {
   const streaks = await buildStandingsMap(leagues);
   const insert = db.prepare(`INSERT OR IGNORE INTO picks
-    (date, league, event_id, home, away, pick_team, pick_type, line, confidence, reasoning)
-    VALUES (?, ?, ?, ?, ?, ?, 'moneyline', NULL, ?, ?)`);
+    (date, league, event_id, home, away, pick_team, pick_type, line, confidence, reasoning, issued_at, starts_at)
+    VALUES (?, ?, ?, ?, ?, ?, 'moneyline', NULL, ?, ?, ?, ?)`);
   const made = [];
   for (const lg of leagues) {
     let events = [];
@@ -117,15 +117,15 @@ async function generatePicks(dateStr, leagues) {
       insert.run(dateStr, lg, ev.id,
         `${home.abbr} ${home.name}`, `${away.abbr} ${away.name}`,
         `${pick.pickTeam.abbr} ${pick.pickTeam.name}`,
-        pick.confidence, pick.reasoning);
-      made.push({ league: lg, eventId: ev.id, home, away, pick });
+        pick.confidence, pick.reasoning, new Date().toISOString(), ev.date);
+      made.push({ league: lg, eventId: ev.id, home, away, pick, startAt: ev.date });
     }
   }
   // Spread picks: one per qualifying moneyline pick, only with real market lines.
   if (oddsAvailable() && made.length) {
     const spreadInsert = db.prepare(`INSERT OR IGNORE INTO picks
-      (date, league, event_id, home, away, pick_team, pick_type, line, confidence, reasoning)
-      VALUES (?, ?, ?, ?, ?, ?, 'spread', ?, ?, ?)`);
+      (date, league, event_id, home, away, pick_team, pick_type, line, confidence, reasoning, issued_at, starts_at)
+      VALUES (?, ?, ?, ?, ?, ?, 'spread', ?, ?, ?, ?, ?)`);
     const byLeague = new Map();
     for (const m of made) {
       if (!byLeague.has(m.league)) byLeague.set(m.league, []);
@@ -142,7 +142,7 @@ async function generatePicks(dateStr, leagues) {
         spreadInsert.run(dateStr, lg, m.eventId,
           `${m.home.abbr} ${m.home.name}`, `${m.away.abbr} ${m.away.name}`,
           `${sp.pickTeam.abbr} ${sp.pickTeam.name}`,
-          sp.line, sp.confidence, sp.reasoning);
+          sp.line, sp.confidence, sp.reasoning, new Date().toISOString(), m.startAt);
       }
     }));
   }
@@ -160,7 +160,7 @@ function rowToPick(r) {
     pickType: r.pick_type || 'moneyline',
     line: r.line || null,
     confidence: r.confidence, reasoning: r.reasoning,
-    status: r.status,
+    status: r.status, issuedAt:r.issued_at || null, startsAt:r.starts_at || null,
   };
 }
 
@@ -234,6 +234,7 @@ export function trackRecord() {
       SUM(CASE WHEN status = 'win' THEN 1 ELSE 0 END) AS wins,
       SUM(CASE WHEN status = 'loss' THEN 1 ELSE 0 END) AS losses
     FROM picks WHERE status IN ('win','loss')
+      AND issued_at IS NOT NULL AND starts_at IS NOT NULL AND issued_at < starts_at
       AND date >= date('now', '-30 days')`).get();
   const n = row.n || 0, wins = row.wins || 0, losses = row.losses || 0;
   if (n < 5) return { calibrating: true, graded: n };
@@ -241,3 +242,37 @@ export function trackRecord() {
 }
 
 export const DISCLAIMER = 'For entertainment only. Not gambling advice.';
+
+
+// Regrade only outstanding recent picks, using the game-date scoreboard rather
+// than relying on today's scoreboard endpoint. Runs at startup and hourly.
+export async function reconcileRecentPicks() {
+ const dates=db.prepare("SELECT DISTINCT date,league FROM picks WHERE status='pending' AND date >= date('now','-14 days')").all();
+ let graded=0;
+ for(const entry of dates){
+  const day=String(entry.date).replace(/-/g,'');
+  if(!/^\d{8}$/.test(day))continue;
+  let games=[];
+  try{games=await fetchHistoricalScoreboard(entry.league,day);}catch{continue}
+  const events=new Map(games.filter(x=>x.status.state==='post').map(x=>[String(x.id),x]));
+  const rows=db.prepare("SELECT * FROM picks WHERE date=? AND league=? AND status='pending'").all(entry.date,entry.league);
+  for(const p of rows){
+   const game=events.get(String(p.event_id));if(!game)continue;
+   const hs=Number(game.home.score),as=Number(game.away.score);
+   if(!Number.isFinite(hs)||!Number.isFinite(as))continue;
+   const home=String(p.pick_team).split(' ')[0].toUpperCase()===String(game.home.abbr).toUpperCase();
+   let result;
+   if(p.pick_type==='spread'){
+    const line=Number(p.line);if(!Number.isFinite(line))continue;
+    const value=(home?hs-as:as-hs)+line;
+    result=value===0?'push':value>0?'win':'loss';
+   } else {
+    if(hs===as)continue;
+    result=(home?hs>as:as>hs)?'win':'loss';
+   }
+   db.prepare("UPDATE picks SET status=?,graded_at=datetime('now') WHERE id=? AND status='pending'").run(result,p.id);
+   graded++;
+  }
+ }
+ return {graded};
+}

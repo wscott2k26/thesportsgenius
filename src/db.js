@@ -156,3 +156,11 @@ export function todayET(d = new Date()) {  const p = new Intl.DateTimeFormat('en
 export function isPremium(user) {
   return !!(user && user.premium_until && new Date(user.premium_until) > new Date());
 }
+
+
+// Verification fields are intentionally NULL for legacy picks without original issuance evidence.
+{
+  const cols = db.prepare('PRAGMA table_info(picks)').all().map(c => c.name);
+  if (!cols.includes('issued_at')) db.exec('ALTER TABLE picks ADD COLUMN issued_at TEXT');
+  if (!cols.includes('starts_at')) db.exec('ALTER TABLE picks ADD COLUMN starts_at TEXT');
+}

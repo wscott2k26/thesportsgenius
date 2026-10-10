@@ -207,6 +207,7 @@ async function loadHome() {
   if (!document.getElementById('picks-grid')) return;
   renderSGVenueStrip();
   renderSGPrelaunch();
+  renderSGVerified();
   renderSGGames();
   await loadAffiliates();
   // track record badge
@@ -256,7 +257,7 @@ function pickCard(p) {
   const res = p.status === 'win' ? '<div class="result win">✓ WON</div>'
     : p.status === 'loss' ? '<div class="result loss">✗ LOST</div>'
     : '<div class="result pending">Pending — grades when the game goes final</div>';
-  const typeLabel = p.pickType === 'spread' ? `SPREAD ${esc(p.line || '')}` : 'ML';
+  const typeLabel = p.pickType === 'spread' ? `SPREAD ${esc(p.line || '')}` : 'MONEYLINE (WINNER)';
   const bets = lineShopping(p, AFFILIATES);
   const totals = totalsShopping(p);
   const splits = splitsNote(p);
@@ -421,4 +422,14 @@ async function renderSGPrelaunch(){
  const {data}=await api('/api/prelaunch-record');
  el.innerHTML=(data.records||[]).map(p=>'<div class="sg-prelaunch-row"><strong>'+esc(p.selected)+' — '+esc(p.result.toUpperCase())+'</strong><span>'+esc(p.matchup)+' · '+esc(p.date)+' · '+esc(p.confidence)+'% confidence · '+esc(p.finalScore)+'</span><small>'+esc(p.provenance)+'</small></div>').join('');
  }catch{el.textContent='Prelaunch history unavailable.'}
+}
+
+async function renderSGVerified(){
+ const el=document.getElementById('sg-verified-record');if(!el)return;
+ try{
+ const {data}=await api('/api/verified-picks'),rows=data.picks||[];
+ const wins=rows.filter(x=>x.status==='win').length,losses=rows.filter(x=>x.status==='loss').length,pending=rows.filter(x=>x.status==='pending').length;
+ el.innerHTML='<p class="reason">'+wins+' wins · '+losses+' losses · '+pending+' pending (most recent 40 picks)</p>'+
+ (rows.length?rows.slice(0,6).map(p=>'<div class="sg-game"><strong>'+esc(p.pick_team)+'</strong><small> · '+esc(p.league.toUpperCase())+' · '+esc(p.date)+' · '+esc(p.status.toUpperCase())+'</small></div>').join(''):'<p class="reason">No independently timestamped picks yet. New predictions will appear as they are saved before kickoff.</p>');
+ }catch{el.textContent='Verified pick history temporarily unavailable.'}
 }
