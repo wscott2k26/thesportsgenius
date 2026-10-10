@@ -363,3 +363,35 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 40
 .splits-note { font-size: 12.5px; color: var(--muted); margin-top: 10px; }
 .line-total { font-weight: 800; font-size: 15px; min-width: 44px; }
 .line-ou { font-size: 13px; font-variant-numeric: tabular-nums; }
+
+/* SG STADIUM-FIRST DESIGN: keep the venue hero unobstructed */
+.sg-hero{padding:36px 0 12px;min-height:310px;max-width:670px}
+.sg-hero .display{font-size:clamp(40px,6vw,70px);line-height:1.08;max-width:660px}
+.sg-hero .sub{max-width:540px;font-size:17px}
+.sg-eyebrow{margin-top:22px;color:var(--gold);letter-spacing:.25em;font-size:12px;font-weight:800}
+.sg-sports{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0 22px}
+.sg-sports a{color:var(--ink);text-decoration:none;border-radius:13px;background:rgba(9,13,19,.78);border:1px solid var(--glass-brd);padding:10px 17px;font-size:13px;backdrop-filter:blur(9px)}
+.sg-sports a:hover,.sg-sports a:focus-visible{background:var(--gold);color:#17130a}
+.home-cols{grid-template-columns:minmax(0,1fr) 330px;align-items:start;gap:16px}
+.sg-aside{display:grid;gap:14px;min-width:0}
+.sg-aside .ask-panel{position:static}
+.sg-picks{grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.sg-picks .card{padding:20px;background:rgba(10,12,17,.79)}
+.sg-picks .matchup{font-size:clamp(19px,2vw,26px)}
+.sg-games h3{font-family:var(--serif);color:var(--gold);margin:0 0 10px;font-size:20px}
+.sg-games{padding:20px;background:rgba(10,12,17,.82)}
+.sg-game{border-top:1px solid rgba(232,197,124,.16);padding:10px 0}
+.sg-game:first-child{border-top:0}
+.sg-game div{display:flex;justify-content:space-between;gap:10px}
+.sg-game strong{font-size:13px}.sg-game small{font-size:12px;color:var(--muted)}
+.sg-games-more{display:block;text-align:center;text-decoration:none;margin-top:8px}
+.sg-venues{margin-top:28px}
+.sg-venue-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.sg-venue-head h2{font-size:16px;color:var(--gold);letter-spacing:.16em;margin:0}
+.sg-venue-head a{font-size:13px;color:var(--gold)}
+.sg-venue-list{display:flex;gap:10px;overflow-x:auto;padding:0 0 12px;scroll-snap-type:x proximity}
+.sg-venue{flex:0 0 172px;min-width:0;text-decoration:none;color:var(--ink);scroll-snap-align:start}
+.sg-venue img{width:100%;height:102px;object-fit:cover;border-radius:11px;border:1px solid var(--glass-brd);display:block}
+.sg-venue span{display:block;margin-top:5px;font-size:12px;text-align:center}
+@media(max-width:1000px){.home-cols{grid-template-columns:1fr}.sg-aside{grid-template-columns:repeat(2,minmax(0,1fr))}.sg-hero{min-height:270px}}
+@media(max-width:700px){.sg-picks,.sg-aside{grid-template-columns:1fr}.sg-hero{min-height:0}.sg-venue{flex-basis:146px}}

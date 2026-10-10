@@ -205,6 +205,8 @@ function renderOffers() {
 /* ---- home page ---- */
 async function loadHome() {
   if (!document.getElementById('picks-grid')) return;
+  renderSGVenueStrip();
+  renderSGGames();
   await loadAffiliates();
   // track record badge
   const badge = document.getElementById('track-badge');
@@ -385,3 +387,18 @@ document.addEventListener('DOMContentLoaded', async () => {
   setInterval(loadTicker, 60000);
   loadHome();
 });
+
+function renderSGVenueStrip(){
+ const el=document.getElementById('sg-venue-list');if(!el)return;
+ const venues=[['NFL Stadium','bg-nfl.jpg'],['Basketball Arena','bg-nba.jpg'],['MLB Ballpark','bg-mlb.jpg'],['Soccer Stadium','bg-soccer.jpg'],['Hockey Arena','bg-hockey.jpg'],['Tennis Center','bg-tennis.jpg'],['College Football','bg-extra-04.jpg'],['College Basketball','bg-extra-10.jpg']];
+ el.innerHTML=venues.map(([name,file])=>'<a class="sg-venue" href="/photo-credits"><img loading="lazy" src="/bg/'+file+'" alt="'+esc(name)+'"><span>'+esc(name)+'</span></a>').join('');
+}
+async function renderSGGames(){
+ const el=document.getElementById('sg-games-list');if(!el)return;
+ try{
+ const {data}=await api('/api/scores');
+ const games=Object.entries(data.leagues||{}).flatMap(([league,info])=>(info.events||[]).filter(e=>e.status.state==='in'||(e.status.state==='pre'&&isToday(e.date))).map(e=>({...e,league})));
+ games.sort((a,b)=>(a.status.state==='in'?0:1)-(b.status.state==='in'?0:1)||new Date(a.date)-new Date(b.date));
+ el.innerHTML=games.length?games.slice(0,5).map(e=>'<div class="sg-game"><div><strong>'+esc(e.away.abbr)+' vs '+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small></div>').join(''):'<p class="reason">No live or upcoming games right now.</p>';
+ }catch{el.textContent='Games unavailable right now. See all scores.'}
+}

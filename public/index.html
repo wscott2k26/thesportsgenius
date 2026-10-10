@@ -33,27 +33,30 @@
 <div class="ticker"><span class="ticker-inner">Loading scores…</span></div>
 
 <div class="wrap">
-  <section class="hero">
+  <section class="hero sg-hero">
     <a class="btn-ghost" href="/history" style="float:right;text-decoration:none;color:var(--gold)">90-DAY GAME ARCHIVE &rarr;</a>
     <span class="badge" id="track-badge"><span class="check">✓</span> Verified track record: loading…</span>
+    <div class="sg-eyebrow">SMARTER PICKS. BIGGER INSIGHTS.</div>
     <h1 class="display">TODAY'S GENIUS PICKS</h1>
     <p class="sub">Data-driven predictions, generated fresh every morning from live records, standings, and streaks — moneyline and spread picks with live line shopping. Real market lines only, never invented.</p>
   </section>
 
+  <div class="sg-sports" aria-label="Explore sports"><a href="/scores?league=nfl">NFL</a><a href="/scores?league=nba">NBA</a><a href="/scores?league=mlb">MLB</a><a href="/scores?league=ncaaf">College Football</a><a href="/scores">All Scores</a><a href="/history">90-Day Results</a></div>
   <div class="home-cols">
     <div>
       <section id="best-bets" style="display:none"></section>
-      <div class="grid" id="picks-grid"><div class="card"><p class="reason">Loading today's picks…</p></div></div>
+      <div class="grid sg-picks" id="picks-grid"><div class="card"><p class="reason">Loading today's picks…</p></div></div>
       <p id="locked-note" class="sec-sub" style="display:none;margin-top:18px"></p>
     </div>
-    <aside class="card ask-panel">
+    <aside class="sg-aside"><div class="card ask-panel">
       <h3>🧠 ASK THE GENIUS</h3>
       <p class="ask-preview">Get instant insight on any matchup — live scores, records, standings, and today's picks.</p>
       <div class="ask-preview"><b>Q:</b> Who has the edge tonight, Chiefs or Bills?</div>
       <a class="btn-gold" href="/chat" style="width:100%;text-align:center">Ask the Genius</a>
-    </aside>
+    </div><div class="card sg-games"><h3>TODAY'S GAMES</h3><div id="sg-games-list" role="status">Loading game schedule...</div><a href="/scores" class="btn-ghost sg-games-more">See all scores</a></div></aside>
   </div>
 
+  <section class="sg-venues" aria-label="Featured sports venues"><div class="sg-venue-head"><h2>FEATURED STADIUMS</h2><a href="/photo-credits">Photo credits</a></div><div id="sg-venue-list" class="sg-venue-list"></div></section>
   <section id="offers-section" style="display:none;margin-top:44px"></section>
 
   <p class="disclaimer">Picks come from a transparent heuristic model (records + home edge + streaks), not a crystal ball. For entertainment. Not gambling advice.</p>
