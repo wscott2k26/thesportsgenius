@@ -405,7 +405,7 @@ async function renderSGGames(){
 
 function sgTeamLogo(league,abbr,provided=''){
  const code=String(abbr||'').toLowerCase().replace(/[^a-z0-9]/g,'');
- const routes={nfl:'football/nfl',nba:'basketball/nba',mlb:'baseball/mlb',nhl:'hockey/nhl',ncaaf:'football/college-football'};
+ const routes={nfl:'nfl',nba:'nba',mlb:'mlb',nhl:'nhl',ncaaf:'college-football'};
  const path=routes[String(league||'').toLowerCase()];
  const candidate=provided||((path&&code)?'https://a.espncdn.com/i/teamlogos/'+path+'/500/'+code+'.png':'');
  if(!candidate)return '';
