@@ -404,3 +404,4 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 40
 .sg-mini-match{display:inline-flex;align-items:center;gap:5px}
 .sg-mini-match .sg-team-logo{height:23px;width:23px}
 @media(max-width:650px){.sg-team-logo{height:29px;width:29px}.sg-team{font-size:14px}}
+.sg-prelaunch{margin-top:22px;background:rgba(10,12,17,.77)}.sg-prelaunch-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:13px 0}.sg-prelaunch-row strong{color:var(--gold)}.sg-prelaunch-row span{font-size:14px}.sg-prelaunch-row small{color:var(--muted)}

@@ -206,6 +206,7 @@ function renderOffers() {
 async function loadHome() {
   if (!document.getElementById('picks-grid')) return;
   renderSGVenueStrip();
+  renderSGPrelaunch();
   renderSGGames();
   await loadAffiliates();
   // track record badge
@@ -411,4 +412,13 @@ function sgTeamLogo(league,abbr,provided=''){
  if(!candidate)return '';
  const url=esc(candidate);
  return '<img class="sg-team-logo" src="'+url+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.hidden=true">';
+}
+
+
+async function renderSGPrelaunch(){
+ const el=document.getElementById('sg-prelaunch-record');if(!el)return;
+ try{
+ const {data}=await api('/api/prelaunch-record');
+ el.innerHTML=(data.records||[]).map(p=>'<div class="sg-prelaunch-row"><strong>'+esc(p.selected)+' — '+esc(p.result.toUpperCase())+'</strong><span>'+esc(p.matchup)+' · '+esc(p.date)+' · '+esc(p.confidence)+'% confidence · '+esc(p.finalScore)+'</span><small>'+esc(p.provenance)+'</small></div>').join('');
+ }catch{el.textContent='Prelaunch history unavailable.'}
 }

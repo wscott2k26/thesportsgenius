@@ -175,6 +175,19 @@ router.get('/odds', async (req, res) => {
   } catch (e) { res.status(502).json({ error: 'odds unavailable' }); }
 });
 
+
+// Prelaunch archive: historical user-attested picks, separate from the model's independently logged track record.
+router.get('/prelaunch-record', (req, res) => res.json({
+  records:[{
+    date:'2026-10-08', league:'mlb', matchup:'Cleveland Guardians at Chicago White Sox',
+    selected:'Cleveland Guardians', pickType:'moneyline', confidence:54,
+    result:'win', finalScore:'CLE 9 - CWS 5', provenance:'user-attested prelaunch prediction',
+    issuedBeforeGame:'reported by owner; original timestamp not independently verified',
+    source:'https://www.mlb.com/guardians/video/steven-kwan-makes-the-catch-to-secure-game-4-victory'
+  }],
+  notice:'Prelaunch record is user-attested and excluded from the verified live-model win rate.'
+}));
+
 router.get('/track-record', (req, res) => {
   res.json(trackRecord());
 });
