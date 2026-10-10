@@ -261,7 +261,7 @@ function pickCard(p) {
   const splits = splitsNote(p);
   return `<div class="card">
     <div class="league-tag">${esc(p.league.toUpperCase())}</div>
-    <div class="matchup">${esc(p.away.replace(/^[A-Z]{2,4} /, ''))} vs ${esc(p.home.replace(/^[A-Z]{2,4} /, ''))}</div>
+    <div class="matchup sg-pick-matchup"><span class="sg-team">${sgTeamLogo(p.league,p.away.split(' ')[0])}<span>${esc(p.away.replace(/^[A-Z]{2,4} /, ''))}</span></span><span class="sg-versus">VS</span><span class="sg-team">${sgTeamLogo(p.league,p.home.split(' ')[0])}<span>${esc(p.home.replace(/^[A-Z]{2,4} /, ''))}</span></span></div>
     <span class="pick-pill">PICK ${esc(p.pickTeam.abbr)} ${typeLabel}</span>
     <div class="conf">${p.confidence}% confidence</div>
     <div class="conf-bar"><i style="width:${p.confidence}%"></i></div>
@@ -399,6 +399,16 @@ async function renderSGGames(){
  const {data}=await api('/api/scores');
  const games=Object.entries(data.leagues||{}).flatMap(([league,info])=>(info.events||[]).filter(e=>e.status.state==='in'||(e.status.state==='pre'&&isToday(e.date))).map(e=>({...e,league})));
  games.sort((a,b)=>(a.status.state==='in'?0:1)-(b.status.state==='in'?0:1)||new Date(a.date)-new Date(b.date));
- el.innerHTML=games.length?games.slice(0,5).map(e=>'<div class="sg-game"><div><strong>'+esc(e.away.abbr)+' vs '+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small></div>').join(''):'<p class="reason">No live or upcoming games right now.</p>';
+ el.innerHTML=games.length?games.slice(0,5).map(e=>'<div class="sg-game"><div><strong class="sg-mini-match">'+sgTeamLogo(e.league,e.away.abbr,e.away.logo)+esc(e.away.abbr)+' vs '+sgTeamLogo(e.league,e.home.abbr,e.home.logo)+esc(e.home.abbr)+'</strong><small>'+esc(e.league.toUpperCase())+'</small></div><small>'+(e.status.state==='in'?'LIVE '+esc(e.away.score)+'-'+esc(e.home.score):esc(fmtTime(e.date)))+'</small></div>').join(''):'<p class="reason">No live or upcoming games right now.</p>';
  }catch{el.textContent='Games unavailable right now. See all scores.'}
+}
+
+function sgTeamLogo(league,abbr,provided=''){
+ const code=String(abbr||'').toLowerCase().replace(/[^a-z0-9]/g,'');
+ const routes={nfl:'football/nfl',nba:'basketball/nba',mlb:'baseball/mlb',nhl:'hockey/nhl',ncaaf:'football/college-football'};
+ const path=routes[String(league||'').toLowerCase()];
+ const candidate=provided||((path&&code)?'https://a.espncdn.com/i/teamlogos/'+path+'/500/'+code+'.png':'');
+ if(!candidate)return '';
+ const url=esc(candidate);
+ return '<img class="sg-team-logo" src="'+url+'" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.hidden=true">';
 }

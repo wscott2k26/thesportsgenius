@@ -395,3 +395,12 @@ footer { text-align: center; color: var(--muted); font-size: 12.5px; padding: 40
 .sg-venue span{display:block;margin-top:5px;font-size:12px;text-align:center}
 @media(max-width:1000px){.home-cols{grid-template-columns:1fr}.sg-aside{grid-template-columns:repeat(2,minmax(0,1fr))}.sg-hero{min-height:270px}}
 @media(max-width:700px){.sg-picks,.sg-aside{grid-template-columns:1fr}.sg-hero{min-height:0}.sg-venue{flex-basis:146px}}
+
+.sg-pick-matchup{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.sg-team{display:flex;align-items:center;gap:9px;min-width:0;flex:1;font-size:clamp(14px,1.5vw,20px)}
+.sg-team:last-child{justify-content:flex-end;text-align:right}
+.sg-team-logo{height:35px;width:35px;object-fit:contain;flex-shrink:0;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+.sg-versus{font:800 11px var(--sans);color:var(--gold);flex:none}
+.sg-mini-match{display:inline-flex;align-items:center;gap:5px}
+.sg-mini-match .sg-team-logo{height:23px;width:23px}
+@media(max-width:650px){.sg-team-logo{height:29px;width:29px}.sg-team{font-size:14px}}
