@@ -9,6 +9,7 @@
 // project scores, so it issues no total picks; totals are shown for line
 // shopping and parlays only.
 import { db, todayET } from './db.js';
+import { snapshotPick } from './ledger.js';
 import { getScoreboard, fetchHistoricalScoreboard, getStandings, LEAGUES, LEAGUE_KEYS, HOME_EDGE } from './providers/espn.js';
 import { getOdds, oddsAvailable, findOddsForPick, bestSpread, formatSpread } from './providers/odds.js';
 
@@ -114,10 +115,11 @@ async function generatePicks(dateStr, leagues) {
       const pick = pickGame(lg, home, away,
         streaks.get(`${lg}:${home.abbr.toUpperCase()}`) || '',
         streaks.get(`${lg}:${away.abbr.toUpperCase()}`) || '');
-      insert.run(dateStr, lg, ev.id,
+      const added=insert.run(dateStr, lg, ev.id,
         `${home.abbr} ${home.name}`, `${away.abbr} ${away.name}`,
         `${pick.pickTeam.abbr} ${pick.pickTeam.name}`,
         pick.confidence, pick.reasoning, new Date().toISOString(), ev.date);
+      if(added.changes)snapshotPick(Number(added.lastInsertRowid));
       made.push({ league: lg, eventId: ev.id, home, away, pick, startAt: ev.date });
     }
   }
@@ -139,10 +141,11 @@ async function generatePicks(dateStr, leagues) {
         const ev = findOddsForPick(oddsData, `${m.home.abbr} ${m.home.name}`, `${m.away.abbr} ${m.away.name}`);
         const sp = maybeSpreadPick(m.pick, ev);
         if (!sp) continue;
-        spreadInsert.run(dateStr, lg, m.eventId,
+        const addedSpread=spreadInsert.run(dateStr, lg, m.eventId,
           `${m.home.abbr} ${m.home.name}`, `${m.away.abbr} ${m.away.name}`,
           `${sp.pickTeam.abbr} ${sp.pickTeam.name}`,
           sp.line, sp.confidence, sp.reasoning, new Date().toISOString(), m.startAt);
+        if(addedSpread.changes)snapshotPick(Number(addedSpread.lastInsertRowid));
       }
     }));
   }

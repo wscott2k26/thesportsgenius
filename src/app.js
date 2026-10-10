@@ -1,18 +1,23 @@
-// The Sports Genius — express app (no listener; see index.js).
+﻿// The Sports Genius â€” express app (no listener; see index.js).
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import path from 'node:path';
 import { router as authRouter, authMiddleware } from './routes/auth.js';
 import { router as apiRouter } from './routes/api.js';
+import { billingRouter,stripeWebhookRouter } from './billing.js';
+import { pushRouter } from './push.js';
 
 export const app = express();
 
+app.use('/api',stripeWebhookRouter);
 app.use(express.json({ limit: '256kb' }));
 app.use(cookieParser());
 app.use(authMiddleware);
+app.use('/api',billingRouter);
 
 app.use('/api/auth', authRouter);
 app.use('/api', apiRouter);
+app.use('/api', pushRouter);
 
 // Static frontend
 const pub = path.join(process.cwd(), 'public');

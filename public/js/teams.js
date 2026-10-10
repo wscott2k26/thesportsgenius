@@ -111,31 +111,26 @@ document.addEventListener('DOMContentLoaded', async () => {
 function sgSetupReminders(){
  const button=document.getElementById('sg-alert-enable'),status=document.getElementById('sg-alert-status');
  if(!button)return;
- const notified=new Set();
- async function check(){
-  if(document.visibilityState!=='visible'||Notification.permission!=='granted'||!window.SG?.user)return;
-  try{
-   const {data}=await api('/api/my');const now=Date.now();
-   for(const entry of data.games||[]){
-    const game=entry.event||entry.game||entry;
-    const name=game?.name||game?.shortName||'Your team';
-    const start=Date.parse(game?.date||entry?.date||'');
-    const id=game?.id||name;
-    if(Number.isFinite(start)&&start-now>=0&&start-now<15*60000&&!notified.has(id)){
-     notified.add(id);
-     new Notification('Game starting soon',{body:name+' starts within 15 minutes'});
-    }
-   }
-  }catch{status.textContent='Reminders temporarily unavailable. Retry later.'}
- }
  button.onclick=async()=>{
-  if(!('Notification' in window)){status.textContent='This browser does not support page notifications.';return}
-  const permission=await Notification.requestPermission();
-  if(permission!=='granted'){status.textContent='Notifications not enabled; you can still use My Teams.';return}
-  button.disabled=true;button.textContent='Page-Open Reminders Enabled';
-  status.textContent='Leave My Teams open for reminders. Background alerts require a future push integration.';
-  await check();
-  setInterval(check,60000);
+  if(!window.SG?.user){status.textContent='Sign in before enabling team alerts.';return}
+  if(!('serviceWorker' in navigator)||!('PushManager' in window)||!('Notification' in window)){
+   status.textContent='Background alerts are not supported by this browser.';return;
+  }
+  try{
+   const {data:cfg}=await api('/api/push/config');
+   if(!cfg.available){status.textContent='Background alerts are not configured yet.';return}
+   const permission=await Notification.requestPermission();
+   if(permission!=='granted'){status.textContent='Permission not granted. Alerts remain off.';return}
+   const registration=await navigator.serviceWorker.register('/sw.js');
+   const key=cfg.publicKey.replace(/-/g,'+').replace(/_/g,'/');
+   const raw=atob(key.padEnd(Math.ceil(key.length/4)*4,'='));
+   const bytes=Uint8Array.from(raw,c=>c.charCodeAt(0));
+   const subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:bytes});
+   const {res,data}=await api('/api/push/subscribe',{method:'POST',body:JSON.stringify(subscription)});
+   if(!res.ok)throw Error(data.error||'Subscription failed');
+   status.textContent='Background reminders enabled for followed teams. Delivery depends on browser and device settings.';
+   button.textContent='Background Reminders Enabled';button.disabled=true;
+  }catch(e){status.textContent='Could not enable background reminders: '+(e.message||'unknown error')}
  };
 }
 document.addEventListener('DOMContentLoaded',sgSetupReminders);

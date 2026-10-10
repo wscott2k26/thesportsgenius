@@ -1,6 +1,8 @@
 // Public + user API routes.
 import { Router } from 'express';
 import { db, todayET, isPremium } from '../db.js';
+import { stripeConfigured } from '../billing.js';
+import { integrity } from '../ledger.js';
 import { getScoreboard, fetchHistoricalScoreboard, getStandings, getTeams, fetchNews, LEAGUE_KEYS, LEAGUES } from '../providers/espn.js';
 import { getPicks, trackRecord, DISCLAIMER } from '../picks.js';
 import { handleChat, FREE_CHATS_PER_DAY } from '../chat.js';
@@ -92,6 +94,8 @@ router.get('/verified-picks.csv',(req,res)=>{
  res.setHeader('Content-Type','text/csv; charset=utf-8');res.setHeader('Content-Disposition','attachment; filename="sports-genius-verified-picks.csv"');
  res.send([cols.join(','),...rows.map(row=>cols.map(k=>safe(row[k])).join(','))].join('\r\n'));
 });
+
+router.get('/ledger-integrity',(req,res)=>res.json({...integrity(),notice:'Local SHA-256 hash chain; independent anchoring not yet configured.'}));
 
 // ---- scores ----
 router.get('/scores', async (req, res) => {
@@ -409,14 +413,15 @@ router.get('/my', requireUser, async (req, res) => {
 
 // ---- billing / premium ----
 router.get('/billing', (req, res) => {
-  const live = process.env.STRIPE_LIVE === '1';
+  const live = stripeConfigured();
   res.json({
-    premiumLink: process.env.STRIPE_PREMIUM_LINK || '',
-    portalUrl: process.env.STRIPE_PORTAL_URL || '',
+    premiumLink: '',
+    checkoutEnabled: live,
+    portalUrl: '',
     live,
     testMode: !live,
-    price: '$8/mo',
-    trial: '7-day free trial',
+    price: 'Shown at Stripe Checkout',
+    trial: 'No trial unless configured in Stripe',
     premium: isPremium(req.user),
   });
 });

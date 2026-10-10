@@ -70,8 +70,12 @@ export function renderNav() {
 
 export async function goPro() {
   const { data } = await api('/api/billing');
-  if (data.premiumLink) { window.open(data.premiumLink, '_blank'); return; }
-  toast(data.testMode ? 'Premium checkout is not wired up yet (test mode).' : 'Premium checkout is not configured yet.');
+  if (data.checkoutEnabled) {
+    const {res, data: checkout}=await api('/api/billing/checkout',{method:'POST'});
+    if(res.ok&&checkout.url){location.assign(checkout.url);return}
+    toast(checkout.error||'Sign in before upgrading to Premium.');return;
+  }
+  toast('Premium checkout is not active yet. No charges will be made.');
 }
 
 export function openAuthModal(mode = 'login') {
