@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+Disallow: /tracker
+Sitemap: https://thesportsgenius.com/sitemap.xml
