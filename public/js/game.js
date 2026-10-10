@@ -15,6 +15,12 @@ const league=q.get('league')||'nfl',id=q.get('id')||'';
  el.innerHTML='<div class="card"><div class="league-tag">'+esc(league.toUpperCase())+' · '+esc(g.status.detail||g.status.state)+'</div><div class="sg-center-matchup">'+teams.map(team).join('<span class="sg-versus">VS</span>')+'</div><p class="sec-sub">'+esc(schedule)+' · '+esc(g.venue||'Venue not listed')+'</p></div>'+
  '<div class="sg-center-panels"><section class="card"><h3>GENIUS PREDICTIONS</h3>'+(picks||'<p class="reason">No recorded model pick for this matchup yet.</p>')+'</section>'+
  '<section class="card"><h3>WHERE TO WATCH</h3><p class="reason">'+(g.broadcasts.length?g.broadcasts.map(esc).join(' · '):'No broadcaster listed by provider')+'</p><p><a class="btn-ghost" target="_blank" rel="noopener" href="'+esc(google)+'">Find official broadcast ↗</a></p><p><a target="_blank" rel="noopener" href="'+esc(yt)+'">Search YouTube for official coverage ↗</a></p><small>Search links are not verified free streams.</small></section></div>';
+ const research=d.research||{};
+ const summaryBlock=document.createElement('section');summaryBlock.className='card';summaryBlock.style.marginTop='18px';
+ const leaders=(research.leaders||[]).flatMap(t=>(t.categories||[]).filter(c=>c.athlete).map(c=>'<div class="sg-game">'+esc(t.team)+': <strong>'+esc(c.athlete)+'</strong> · '+esc(c.name)+' '+esc(c.value)+'</div>')).slice(0,8).join('');
+ const last=(research.lastFiveGames||[]).flatMap(t=>(t.events||[]).map(e=>'<div class="sg-game">'+esc(t.team)+' · '+esc(e.name)+' · '+esc(e.result)+' '+esc(e.score)+'</div>')).slice(0,10).join('');
+ summaryBlock.innerHTML='<h3 style="color:var(--gold)">MATCHUP RESEARCH</h3>'+(leaders?'<h4>Player leaders</h4>'+leaders:'<p class="reason">Player leaders not supplied for this matchup.</p>')+(last?'<h4>Recent games</h4>'+last:'<p class="reason">Recent form not supplied for this matchup.</p>')+'<p class="sec-sub">Source: ESPN game summary. Injury and lineup information not verified.</p>';
+ el.appendChild(summaryBlock);
  document.title=teams.map(t=>t.abbr).join(' vs ')+' | Sports Genius Game Center';
  }catch(e){el.innerHTML='<div class="card">'+esc(e.message)+' · <a href="/scores">Back to Scores</a></div>'}
 })();

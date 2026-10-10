@@ -67,7 +67,22 @@ router.get('/game', async (req,res) => {
   }
   if(!game)return res.status(404).json({error:'game_not_in_current_feed'});
   const picks=db.prepare('SELECT pick_team,pick_type,confidence,status,issued_at,starts_at FROM picks WHERE league=? AND event_id=? ORDER BY id DESC LIMIT 4').all(league,id);
-  res.json({game,picks,fetchedAt,delayed:!!delayed,coverage:{injuries:false,verifiedFreeStreams:false},note:'Broadcast listings are provider-supplied; free streams are not guaranteed.'});
+  let research={lastFiveGames:[],leaders:[],source:'ESPN game summary',available:false};
+  try {
+   const conf=LEAGUES[league];
+   const url='https://site.api.espn.com/apis/site/v2/sports/'+conf.sport+'/'+conf.league+'/summary?event='+encodeURIComponent(id);
+   const response=await fetch(url,{signal:AbortSignal.timeout(5500)});
+   if(response.ok){
+    const summary=await response.json();
+    const last=(summary.lastFiveGames||[]);
+    const leaders=(summary.leaders||[]);
+    research={lastFiveGames:Array.isArray(last)?last.slice(0,2).map(x=>({team:x.team?.displayName||'',events:(x.events||[]).slice(0,5).map(a=>({name:a.name||'',result:a.result||'',score:a.score||''}))})):[],
+      leaders:Array.isArray(leaders)?leaders.slice(0,2).map(x=>({team:x.team?.displayName||'',categories:(x.leaders||[]).slice(0,3).map(y=>({name:y.displayName||y.name||'',athlete:y.leaders?.[0]?.athlete?.displayName||'',value:y.leaders?.[0]?.displayValue||''}))})):[],
+      source:'ESPN game summary',available:true};
+   }
+  }catch{/* research is optional; never block the game card */}
+
+  res.json({game,picks,research,fetchedAt,delayed:!!delayed,coverage:{injuries:false,verifiedFreeStreams:false},note:'Broadcast listings are provider-supplied; free streams are not guaranteed.'});
  }catch{res.status(502).json({error:'game_data_unavailable'});}
 });
 router.get('/verified-picks.csv',(req,res)=>{
