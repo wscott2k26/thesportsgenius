@@ -8,6 +8,15 @@ import { billingRouter,stripeWebhookRouter } from './billing.js';
 import { pushRouter } from './push.js';
 
 export const app = express();
+// Consolidate duplicate public hosts for Google while preserving POST/webhook routing.
+app.use((req,res,next)=>{
+ const hostname=String(req.headers.host||'').split(':')[0].toLowerCase();
+ if((req.method==='GET'||req.method==='HEAD')&&hostname==='www.thesportsgenius.com'){
+  return res.redirect(308,'https://thesportsgenius.com'+req.originalUrl);
+ }
+ next();
+});
+
 
 app.use('/api',stripeWebhookRouter);
 app.use(express.json({ limit: '256kb' }));
