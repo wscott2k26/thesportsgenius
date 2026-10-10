@@ -88,9 +88,9 @@ body {
   border-radius: 16px; background: rgba(0,0,0,0.35); border: 1px solid rgba(232,197,124,0.18);
   backdrop-filter: blur(14px); padding: 10px 0;
 }
-.ticker-inner { display: flex; width: max-content; animation: tick 42s linear infinite; font-size: 14px; color: var(--ink); will-change: transform; }
+.ticker-inner { display: flex; width: max-content; animation: tick 22s linear infinite; animation-delay: -3s; font-size: 14px; color: var(--ink); will-change: transform; }
 .ticker-copy { display: inline-block; flex: 0 0 auto; min-width: 1240px; padding-right: 72px; }
-.ticker:hover .ticker-inner { animation-play-state: paused; }
+.ticker:focus-within .ticker-inner { animation-play-state: paused; }
 .ticker-inner .dot { color: var(--gold); margin: 0 14px; }
 .ticker-inner .live { color: #ff6b6b; font-weight: 700; }
 @keyframes tick { from { transform: translateX(0); } to { transform: translateX(-50%); } }
