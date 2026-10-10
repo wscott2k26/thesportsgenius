@@ -420,8 +420,8 @@ router.get('/billing', (req, res) => {
     portalUrl: '',
     live,
     testMode: !live,
-    price: 'Shown at Stripe Checkout',
-    trial: 'No trial unless configured in Stripe',
+    price: '$8/month',
+    trial: '7-day free trial',
     premium: isPremium(req.user),
   });
 });

@@ -177,8 +177,8 @@ describe('premium gating', () => {
   });
   it('billing endpoint exposes Stripe env gating', async () => {
     const { data } = await req('GET', '/api/billing');
-    assert.equal(data.price, 'Shown at Stripe Checkout');
-    assert.equal(data.trial, 'No trial unless configured in Stripe');
+    assert.equal(data.price, '$8/month');
+    assert.equal(data.trial, '7-day free trial');
     assert.equal(typeof data.testMode, 'boolean');
     assert.equal(data.premium, false); // guest
     const me = await req('GET', '/api/billing', { token: proToken });
