@@ -131,7 +131,7 @@ export function startBackgrounds() {
     i = (i + 1) % imgs.length;
   };
   show();
-  if (!reduce) setInterval(show, 30000);
+  setInterval(show, 30000); // Always rotate photos; reduced motion only suppresses Ken Burns zoom.
 }
 
 /* ---- ticker ---- */
