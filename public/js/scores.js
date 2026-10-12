@@ -26,6 +26,7 @@ function card(e) {
     <div class="score-row">${teamLine(e.away)}${score(e.away)}</div>
     <div class="score-row">${teamLine(e.home)}${score(e.home)}</div>
     ${meta ? `<div class="delayed-note">${meta}</div>` : ''}
+    <a class="sg-gamecenter-link" href="/matchup/${encodeURIComponent(current)}/${encodeURIComponent(e.id)}/${encodeURIComponent(String(e.date).slice(0,10).replaceAll("-",""))}">Read matchup →</a>
     <a class="sg-gamecenter-link" href="/game?league=${encodeURIComponent(current)}&id=${encodeURIComponent(e.id)}&date=${encodeURIComponent(String(e.date).slice(0,10).replaceAll('-',''))}">Open Game Center →</a>
   </div>`;
 }

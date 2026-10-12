@@ -44,6 +44,7 @@
 <div class="wrap">
   <h1 class="display" style="font-size:clamp(30px,5vw,52px)">LIVE SCORES</h1>
   <p class="sec-sub">Select any game for matchup details, broadcasts, and timestamped model picks.</p>
+  <p class="sec-sub"><a href="/matchups" style="color:var(--gold)">Browse shareable matchup pages →</a> · <a href="/saved-games" style="color:var(--gold)">My saved games</a></p>
   <div id="league-tabs" style="display:flex;gap:10px;flex-wrap:wrap;margin:18px 0"></div>
   <p class="delayed-note" id="delayed-note" style="display:none">⚠ Live feed hiccup — showing the last cached scores.</p>
   <div class="grid" id="scores-wrap"><div class="card"><p class="reason">Loading…</p></div></div>
@@ -76,5 +77,6 @@
 <footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
 <script type="module" src="/js/app.js"></script>
 <script type="module" src="/js/scores.js"></script>
+<script defer src="/js/growth-client.js"></script>
 </body>
 </html>

@@ -6,6 +6,7 @@ import { router as authRouter, authMiddleware } from './routes/auth.js';
 import { router as apiRouter } from './routes/api.js';
 import { billingRouter,stripeWebhookRouter } from './billing.js';
 import { pushRouter } from './push.js';
+import {growthRouter,growthApiRouter} from './growth.js';
 
 export const app = express();
 // Consolidate duplicate public hosts for Google while preserving POST/webhook routing.
@@ -27,6 +28,8 @@ app.use('/api',billingRouter);
 app.use('/api/auth', authRouter);
 app.use('/api', apiRouter);
 app.use('/api', pushRouter);
+app.use('/api',growthApiRouter);
+app.use('/',growthRouter);
 
 // Static frontend
 const pub = path.join(process.cwd(), 'public');
