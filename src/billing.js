@@ -8,7 +8,36 @@ for(const [column,definition] of [['stripe_customer_id','TEXT'],['stripe_subscri
  if(!cols.includes(column))db.exec('ALTER TABLE users ADD COLUMN '+column+' '+definition);
 }
 db.exec("CREATE TABLE IF NOT EXISTS stripe_events (id TEXT PRIMARY KEY, received_at TEXT NOT NULL DEFAULT (datetime('now')))");
-const configured=()=>!!(process.env.STRIPE_SECRET_KEY&&process.env.STRIPE_PRICE_ID&&process.env.STRIPE_WEBHOOK_SECRET&&process.env.STRIPE_LIVE==='1');
+// Validate the Stripe credential against our exact, live $8 monthly price before
+// exposing real checkout. No secret values or API responses are logged.
+let verifiedLivePrice=false;
+async function verifyLivePrice(){
+ const secret=process.env.STRIPE_SECRET_KEY,priceId=process.env.STRIPE_PRICE_ID;
+ if(!secret||!priceId){verifiedLivePrice=false;return}
+ if(!secret.startsWith('sk_live_')){
+  verifiedLivePrice=false;console.error('[stripe preflight] FAIL: live secret key required');return;
+ }
+ try{
+  const response=await fetch('https://api.stripe.com/v1/prices/'+encodeURIComponent(priceId),{
+   headers:{Authorization:'Bearer '+secret},signal:AbortSignal.timeout(10000)
+  });
+  const price=await response.json();
+  verifiedLivePrice=!!(response.ok&&price.livemode===true&&price.active===true&&price.id===priceId&&
+   price.unit_amount===800&&price.currency==='usd'&&price.type==='recurring'&&
+   price.recurring?.interval==='month'&&price.recurring?.interval_count===1);
+  console.info('[stripe preflight] '+(verifiedLivePrice?'PASS: correct live monthly plan':'FAIL: live price/account mismatch'));
+ }catch{
+  verifiedLivePrice=false;console.error('[stripe preflight] FAIL: could not verify Stripe plan');
+ }
+}
+if(process.env.STRIPE_SECRET_KEY){
+ void verifyLivePrice();
+ const retry=setInterval(()=>{void verifyLivePrice()},5*60*1000);
+ retry.unref?.();
+}
+const configured=()=>!!(verifiedLivePrice&&process.env.STRIPE_SECRET_KEY&&process.env.STRIPE_PRICE_ID&&
+ process.env.STRIPE_WEBHOOK_SECRET&&process.env.STRIPE_LIVE==='1');
+
 async function stripe(endpoint,body){
  const response=await fetch('https://api.stripe.com/v1/'+endpoint,{
  method:'POST',headers:{Authorization:'Bearer '+process.env.STRIPE_SECRET_KEY,'Content-Type':'application/x-www-form-urlencoded'},
