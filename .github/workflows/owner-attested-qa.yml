@@ -1,0 +1,31 @@
+name: Sports Genius backend QA
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  workflow_dispatch:
+jobs:
+  node-tests:
+    name: Backend / owner-attested record tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    env:
+      DB_PATH: ":memory:"
+      ADMIN_EMAILS: ledger-admin@example.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install native dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Syntax check
+        run: |
+          node --check src/attested-records.js
+          node --check src/routes/api.js
+          node --check public/js/admin.js
+          node --check test/attested-records.test.js
+      - name: Run all backend tests
+        run: node --test test/*.test.js
