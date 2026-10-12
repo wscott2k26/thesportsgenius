@@ -89,6 +89,30 @@
   </div>
 </div>
 
+<div class="modal-veil" id="auth-modal">
+  <div class="card modal">
+    <div data-mode-login>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Sign in</h2>
+      <form data-form="login">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password</label><input name="password" type="password" required></div>
+        <button class="btn-gold" style="width:100%">Sign in</button>
+      </form>
+      <p class="sec-sub">New here? <a href="#" data-switch="register" style="color:var(--gold)">Create an account</a></p>
+    </div>
+    <div data-mode-register>
+      <h2 class="sec-title" style="font-size:28px;margin-top:0">Join free</h2>
+      <form data-form="register">
+        <div class="field"><label>Email</label><input name="email" type="email" required></div>
+        <div class="field"><label>Password (8+ chars)</label><input name="password" type="password" minlength="8" required></div>
+        <button class="btn-gold" style="width:100%">Create account</button>
+      </form>
+      <p class="sec-sub">Already a member? <a href="#" data-switch="login" style="color:var(--gold)">Sign in</a></p>
+    </div>
+    <p class="err"></p>
+  </div>
+</div>
+
 <footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
 <script type="module" src="/js/app.js"></script>
 <script type="module" src="/js/admin.js"></script>
