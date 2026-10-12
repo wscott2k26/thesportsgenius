@@ -45,6 +45,15 @@ export function renderNav() {
       badge.style.cssText = 'font-size:12px;font-weight:800;color:#1c1408;background:var(--gold);border-radius:999px;padding:6px 12px;';
       badge.textContent = 'PRO';
       slot.appendChild(badge);
+      const manage = document.createElement('a');
+      manage.className = 'btn-ghost'; manage.href = '#'; manage.textContent = 'Manage plan';
+      manage.onclick = async (e) => {
+        e.preventDefault();
+        const {res, data} = await api('/api/billing/portal', {method:'POST'});
+        if (res.ok && data.url) { location.assign(data.url); return; }
+        toast(data.error || 'Could not open billing management. Please try again.');
+      };
+      slot.appendChild(manage);
     }
     const out = document.createElement('button'); out.className = 'btn-ghost'; out.textContent = 'Sign out';
     out.onclick = async () => { await api('/api/auth/logout', { method: 'POST' }); localStorage.removeItem('sg_token'); location.reload(); };
