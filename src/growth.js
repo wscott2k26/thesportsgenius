@@ -13,7 +13,7 @@ const niceDate=x=>new Date(x).toLocaleString('en-US',{timeZone:'America/New_York
 const label=k=>LEAGUES[k]?.label||k.toUpperCase();
 const link=(label,url)=>'<a class="btn-ghost" href="'+esc(url)+'" style="display:inline-block;margin:8px 8px 8px 0">'+esc(label)+' →</a>';
 const boundedFetch=(url,opts)=>fetch(url,{...opts,signal:AbortSignal.timeout(8000)});
-const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds'];
+const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds','/privacy'];
 function shell(title,desc,url,body,structured=null,robots='index, follow'){
  const json=structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'';
  const section=url.split("/")[2];
@@ -29,7 +29,7 @@ function shell(title,desc,url,body,structured=null,robots='index, follow'){
  '<nav><a class="link" href="/">Picks</a><a class="link" href="/scores">Scores</a><a class="link" href="/matchups">Matchups</a><a class="link" href="/guides">Guides</a><a class="link" href="/teams">My Teams</a></nav>'+
  '<div id="nav-auth" style="display:flex;gap:10px;align-items:center"></div></header>'+
  '<div class="ticker"><span class="ticker-inner">Loading scores…</span></div><main class="wrap">'+body+'</main>'+
- '<footer>Schedules and scores supplied by ESPN. Broadcasts may change. Information only, not gambling advice. 21+. Help: 1-800-GAMBLER. <a href="/share-kit">Share</a></footer>'+
+ '<footer>Schedules and scores supplied by ESPN. Broadcasts may change. Information only, not gambling advice. 21+. Help: 1-800-GAMBLER. <a href="/share-kit">Share</a> · <a href="/privacy">Privacy & analytics</a></footer>'+
  '<script type="module" src="/js/app.js"></script><script defer src="/js/growth-client.js"></script></body></html>';
 }
 let listing={at:0,games:[]};
@@ -177,6 +177,18 @@ growthRouter.get('/share-kit',(req,res)=>{
  }).join('')+link('Browse games','/matchups');
  res.send(shell('Sports Genius Social Sharing Kit','Ready-to-share sports game research captions.','/share-kit',body,null,'noindex, follow'));
 });
+growthRouter.get('/privacy',(req,res)=>{
+ const body='<section class="hero"><div class="league-tag">YOUR PRIVACY</div><h1 class="display">Privacy & Analytics</h1>'+
+ '<p class="sub">How Sports Genius measures site usage and how to make your choice.</p></section>'+
+ '<section class="card"><h2>Anonymous first-party counts</h2><p>Sports Genius collects daily aggregate counts of page views, sharing, bookmarks, copied captions and calendar actions, grouped by page and broad referral category. These counters do not save your IP address, name, account ID, cookies or full referring URL. Do Not Track and Global Privacy Control signals disable these counters.</p>'+
+ '<h2>Optional Google Analytics</h2><p>With your permission, Sports Genius may load Google Analytics 4. Google Analytics can use cookies and process browsing data according to Google privacy terms. It is off unless a Sports Genius-owned measurement ID is configured and you explicitly allow it. Declining does not prevent use of the site.</p>'+
+ '<p><button type="button" class="btn-ghost" data-disable-analytics>Decline or withdraw optional analytics</button></p>'+
+ '<h2>Device bookmarks</h2><p>Saved games are stored locally in your browser. Clearing browser storage will remove them. Signing in and favorite-team push reminders are optional and handled separately.</p>'+
+ '<h2>Contact</h2><p>For privacy questions use the contact information published by the site owner. This page does not override the terms of third-party streaming, data or authentication providers.</p></section>';
+ res.send(shell('Privacy & Analytics | Sports Genius','How Sports Genius measures website traffic and handles optional analytics consent.','/privacy',body));
+});
+const ga4Id=()=>/^G-[A-Z0-9]{4,16}$/.test(process.env.GA4_MEASUREMENT_ID||'')?process.env.GA4_MEASUREMENT_ID:null;
+growthApiRouter.get('/growth/config',(req,res)=>res.set('Cache-Control','public, max-age=300').json({ga4MeasurementId:ga4Id(),consentRequired:true}));
 // First-party analytics: daily counts only, never store IP, device, account, cookie or full referrer.
 db.exec('CREATE TABLE IF NOT EXISTS growth_daily(day TEXT NOT NULL,event TEXT NOT NULL,path TEXT NOT NULL,source TEXT NOT NULL,total INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,event,path,source))');
 const events=new Set(['pageview','share','save','calendar','copy']);

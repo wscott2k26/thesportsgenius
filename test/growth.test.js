@@ -29,6 +29,13 @@ test('growth routes keep legacy app safe, guides indexable and private dashboard
  const address='http://127.0.0.1:'+server.address().port;
  try{
   const guide=await fetch(address+'/guides/matchup-research');const html=await guide.text();
+  const cfgResponse=await fetch(address+'/api/growth/config');assert.equal(cfgResponse.status,200);
+  const cfg=await cfgResponse.json();assert.equal(cfg.consentRequired,true);
+  assert.equal(cfg.ga4MeasurementId,null,'never inject GA4 ID unless configured');
+  const privResponse=await fetch(address+'/privacy');assert.equal(privResponse.status,200);
+  const privacy=await privResponse.text();assert.match(privacy,/optional Google Analytics/i);
+  assert.match(privacy,/Privacy &amp; Analytics/);
+
   assert.equal(guide.status,200);
   assert.match(html,/rel="canonical" href="https:\/\/thesportsgenius.com\/guides\/matchup-research"/);
   assert.match(html,/"@type":"Article"/);

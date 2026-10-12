@@ -72,5 +72,47 @@
   const caption=e.target.closest('[data-copy-caption]');
   if(caption){copy(caption.dataset.copyCaption);track('copy')}
  });
- document.addEventListener('DOMContentLoaded',()=>{track('pageview');drawSaved()});
+ const consentKey='sg_ga4_consent_v1';
+ async function optionalAnalytics(){
+  if(!trackingAllowed())return;
+  let cfg;try{const r=await fetch('/api/growth/config');if(!r.ok)return;cfg=await r.json()}catch{return}
+  const id=cfg?.ga4MeasurementId;
+  if(!/^G-[A-Z0-9]{4,16}$/.test(id||''))return;
+  const status=()=>{try{return localStorage.getItem(consentKey)}catch{return null}};
+  const load=()=>{
+   if(window.__sgGaLoaded)return;
+   window.__sgGaLoaded=true;
+   window.dataLayer=window.dataLayer||[];
+   window.gtag=function(){window.dataLayer.push(arguments)};
+   window.gtag('js',new Date());
+   window.gtag('config',id,{anonymize_ip:true});
+   const tag=document.createElement('script');tag.async=true;
+   tag.src='https://www.googletagmanager.com/gtag/js?id='+encodeURIComponent(id);
+   document.head.appendChild(tag);
+  };
+  if(status()==='yes'){load();return}
+  if(status()==='no')return;
+  const banner=document.createElement('div');
+  banner.setAttribute('role','region');
+  banner.setAttribute('aria-label','Optional analytics choice');
+  banner.style.cssText='position:fixed;bottom:14px;left:14px;right:14px;z-index:9998;max-width:650px;margin:auto;background:#121b29;color:#fff;border:1px solid #b89547;border-radius:12px;padding:16px;box-shadow:0 6px 28px #000a;font:14px/1.5 system-ui,sans-serif';
+  const message=document.createElement('p');message.textContent='Help us improve Sports Genius? Optional Google Analytics can collect usage data and use cookies. You can decline and still use the site.';
+  message.style.margin='0 0 12px';
+  const choices=document.createElement('div');
+  const button=(label,choice)=>{const b=document.createElement('button');b.type='button';b.className='btn-ghost';b.textContent=label;b.style.marginRight='8px';b.onclick=()=>{try{localStorage.setItem(consentKey,choice)}catch{}banner.remove();if(choice==='yes')load()};return b};
+  choices.append(button('Allow analytics','yes'),button('No thanks','no'));
+  const details=document.createElement('a');details.href='/privacy';details.textContent='Privacy details';details.style.color='#f5d18a';details.style.marginLeft='6px';choices.append(details);
+  banner.append(message,choices);document.body.appendChild(banner);
+ }
+ document.addEventListener('click',e=>{
+  if(!e.target.closest('[data-disable-analytics]'))return;
+  try{localStorage.setItem(consentKey,'no')}catch{}
+  if(typeof window.gtag==='function')window.gtag('consent','update',{analytics_storage:'denied'});
+  for(const part of document.cookie.split(';')){
+   const cookieName=part.split('=')[0].trim();
+   if(cookieName==='_ga'||cookieName.startsWith('_ga_'))document.cookie=cookieName+'=;Max-Age=0;path=/;SameSite=Lax';
+  }
+  msg('Optional analytics disabled on this browser');
+ });
+ document.addEventListener('DOMContentLoaded',()=>{track('pageview');drawSaved();optionalAnalytics()});
 })();
