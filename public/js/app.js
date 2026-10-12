@@ -56,16 +56,6 @@ export function renderNav() {
     join.onclick = (e) => { e.preventDefault(); openAuthModal('register'); };
     slot.append(signin, join);
   }
-  // Stripe test-mode badge (env-gated billing)
-  api('/api/billing').then(({ data }) => {
-    if (data && data.testMode) {
-      const t = document.createElement('span');
-      t.className = 'test-badge';
-      t.textContent = 'TEST MODE';
-      t.title = 'Stripe is in test mode — no real charges';
-      slot.appendChild(t);
-    }
-  }).catch(() => {});
 }
 
 export async function goPro() {
