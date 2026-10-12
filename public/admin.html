@@ -45,6 +45,37 @@
   <div id="admin-body" style="display:none">
     <h1 class="display" style="font-size:clamp(30px,5vw,52px)">ADMIN</h1>
 
+
+    <section aria-label="Track record" id="admin-track-record">
+      <h2 class="sec-title" style="font-size:24px">Track Record</h2>
+      <p class="sec-sub">The verified live record is calculated automatically from timestamped pregame predictions. Historical outcomes entered here remain <b>owner-attested</b>; they never change that verified record or its immutable ledger.</p>
+      <div class="card" style="margin-bottom:20px">
+        <h3 style="color:var(--gold);margin-top:0">Historical pick history</h3>
+        <div id="prelaunch-list" aria-live="polite"><p class="reason">Loading historical picks…</p></div>
+        <h3 style="color:var(--gold);margin-top:24px">Record a historical pick</h3>
+        <p class="sec-sub">Enter a completed game only. Pressing Record is duplicate-safe, but the result remains an owner-attested entry unless independent pregame evidence is supplied.</p>
+        <form id="prelaunch-form">
+          <div class="field"><label for="hist-date">Game date</label><input id="hist-date" name="date" type="date" required></div>
+          <div class="field"><label for="hist-league">League</label><select id="hist-league" name="league" required>
+            <option value="mlb">MLB</option><option value="nfl">NFL</option><option value="nba">NBA</option><option value="nhl">NHL</option>
+            <option value="ncaaf">College Football</option><option value="ncaab">College Basketball</option>
+            <option value="wnba">WNBA</option><option value="soccer">Soccer</option><option value="tennis">Tennis</option>
+          </select></div>
+          <div class="field"><label for="hist-matchup">Matchup (both teams)</label><input id="hist-matchup" name="matchup" maxlength="160" placeholder="Cleveland Guardians vs. Opponent" required></div>
+          <div class="field"><label for="hist-selected">Original selection</label><input id="hist-selected" name="selected" maxlength="90" placeholder="Cleveland Guardians" required></div>
+          <div class="field"><label for="hist-type">Pick type</label><select id="hist-type" name="pickType"><option value="moneyline">Moneyline</option><option value="spread">Spread</option><option value="total">Total</option></select></div>
+          <div class="field"><label for="hist-result">Result</label><select id="hist-result" name="result" required><option value="win">Win</option><option value="loss">Loss</option><option value="push">Push</option></select></div>
+          <div class="field"><label for="hist-score">Final score</label><input id="hist-score" name="finalScore" maxlength="90" placeholder="CLE 4 - DET 3" required></div>
+          <div class="field"><label for="hist-confidence">Original confidence % (optional)</label><input id="hist-confidence" name="confidence" type="number" min="0" max="100" placeholder="Only if originally recorded"></div>
+          <div class="field"><label for="hist-source">Source URL (optional)</label><input id="hist-source" name="source" type="url" maxlength="500" placeholder="https://..."></div>
+          <div class="field"><label for="hist-notes">Notes (optional)</label><input id="hist-notes" name="notes" maxlength="600" placeholder="ALDS Game 5, original source, etc."></div>
+          <p class="sec-sub"><label><input id="hist-attested" name="ownerAttested" type="checkbox" required> I confirm this is a historical, owner-attested result, not an independently verified pregame prediction.</label></p>
+          <button class="btn-gold" id="hist-save" type="submit">Record historical pick</button>
+          <p class="err" id="hist-err" role="alert" aria-live="polite"></p>
+        </form>
+      </div>
+    </section>
+
     <h2 class="sec-title" style="font-size:24px">Sportsbook affiliate links</h2>
     <p class="sec-sub">These render next to every pick as "Bet this at [Sportsbook]" buttons and in the homepage "Sportsbook offers" section. <b>Apply to each sportsbook's affiliate program yourself</b> (DraftKings, FanDuel, etc.) and paste your real tracking URLs here — the defaults are placeholders.</p>
     <div class="card" style="margin-bottom:20px">
