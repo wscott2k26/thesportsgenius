@@ -79,6 +79,7 @@ stripeWebhookRouter.post('/stripe/webhook',raw({type:'application/json',limit:'1
 });
 billingRouter.post('/billing/checkout',async(req,res)=>{
  if(!req.user)return res.status(401).json({error:'Sign in first'});
+ if(isPremium(req.user))return res.status(409).json({error:'Premium is already active. Manage your plan instead.'});
  if(!configured())return res.status(503).json({error:'Live Stripe checkout is not yet configured'});
  try{
   let customer=req.user.stripe_customer_id;
