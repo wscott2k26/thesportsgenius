@@ -143,24 +143,51 @@ export function startBackgrounds() {
 }
 
 /* ---- ticker ---- */
-export async function loadTicker() {
+// Use two identical, gap-free strips. On a narrow screen (or a quiet sports
+// day), repeat the score text inside each strip until it fills the viewport.
+function renderTicker(html) {
   const inner = document.querySelector('.ticker-inner');
   if (!inner) return;
+  const viewport = inner.parentElement?.clientWidth || window.innerWidth || 390;
+  if (inner.dataset.content === html && Number(inner.dataset.viewport) === viewport) return;
+  inner.dataset.content = html;
+  inner.dataset.viewport = String(viewport);
+  const segment = html + ' <span class="dot">•</span> ';
+  inner.innerHTML = '<span class="ticker-copy">' + segment + '</span>';
+  const first = inner.firstElementChild;
+  const measured = Math.max(1, first.getBoundingClientRect().width);
+  const repeats = Math.min(12, Math.max(1, Math.ceil((viewport + 80) / measured)));
+  if (repeats > 1) first.innerHTML = segment.repeat(repeats);
+  const second = first.cloneNode(true);
+  second.setAttribute('aria-hidden', 'true');
+  inner.appendChild(second);
+  // Scroll at a steady, readable speed irrespective of phone or desktop width.
+  const duration = Math.max(18, Math.min(90, first.getBoundingClientRect().width / 55));
+  inner.style.animationDuration = duration.toFixed(1) + 's';
+  inner.style.animationName = 'none';
+  void inner.offsetWidth;
+  inner.style.animationName = '';
+}
+export async function loadTicker() {
+  if (!document.querySelector('.ticker-inner')) return;
   try {
-    const { data } = await api('/api/scores');
-    const bits = [];
-    for (const lg of Object.keys(data.leagues || {})) {
+    const { res, data } = await api('/api/scores');
+    if (!res.ok || !data?.leagues) throw new Error('scores unavailable');
+    const live = [], upcoming = [];
+    for (const lg of Object.keys(data.leagues)) {
       for (const e of data.leagues[lg].events || []) {
-        if (e.status.state === 'in') {
-          bits.push(`<span class="live">● LIVE</span> ${esc(e.away.abbr)} ${e.away.score} — ${esc(e.home.abbr)} ${e.home.score} <span class="dot">•</span> ${esc(e.status.shortDetail || '')}`);
-        } else if (e.status.state === 'pre' && isToday(e.date)) {
-          bits.push(`${esc(e.away.abbr)} vs ${esc(e.home.abbr)} <span class="dot">•</span> ${esc(fmtTime(e.date))}`);
+        if (e.status?.state === 'in') {
+          live.push(`<span class="live">● LIVE</span> ${esc(e.away?.abbr)} ${esc(e.away?.score)} — ${esc(e.home?.abbr)} ${esc(e.home?.score)} <span class="dot">•</span> ${esc(e.status.shortDetail || '')}`);
+        } else if (e.status?.state === 'pre' && isToday(e.date)) {
+          upcoming.push(`${esc(e.away?.abbr)} vs ${esc(e.home?.abbr)} <span class="dot">•</span> ${esc(fmtTime(e.date))}`);
         }
       }
     }
-    const text = bits.length ? bits.slice(0, 14).join(' <span class="dot">•</span> ') : 'No live games right now — check back soon';
-    inner.innerHTML = '<span class="ticker-copy">' + text + ' <span class="dot">•</span></span><span class="ticker-copy" aria-hidden="true">' + text + ' <span class="dot">•</span></span>';
-  } catch { inner.textContent = 'Scores unavailable — retrying shortly'; }
+    const bits = [...live, ...upcoming].slice(0, 14);
+    renderTicker(bits.length ? bits.join(' <span class="dot">•</span> ') : 'No games scheduled today — check back soon');
+  } catch {
+    renderTicker('Live scores temporarily unavailable — retrying shortly');
+  }
 }
 
 export function esc(s) { return String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])); }
@@ -392,9 +419,10 @@ function lineShopping(p, affiliates) {
 document.addEventListener('DOMContentLoaded', async () => {
   startBackgrounds();
   wireAuthModal();
-  await refreshUser();
+  // Kick off the ticker independently so slow sign-in never leaves a blank strip.
   loadTicker();
   setInterval(loadTicker, 60000);
+  try { await refreshUser(); } catch { renderNav(); }
   loadHome();
 });
 
