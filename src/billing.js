@@ -60,6 +60,7 @@ billingRouter.post('/billing/checkout',async(req,res)=>{
   const session=await stripe('checkout/sessions',{
    mode:'subscription',customer,'line_items[0][price]':process.env.STRIPE_PRICE_ID,
    'line_items[0][quantity]':'1',success_url:url+'/?checkout=success',cancel_url:url+'/?checkout=cancel',
+   'subscription_data[trial_period_days]':'7',
    'client_reference_id':String(req.user.id),'subscription_data[metadata][user_id]':String(req.user.id)
   });
   res.json({url:session.url});
