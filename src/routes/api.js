@@ -10,6 +10,7 @@ import { getOdds, oddsAvailable, findOddsForPick, bestMoneyline, matchAffiliate,
 import { getMovements, getLineHistory, movementSummary } from '../providers/movement.js';
 import { getSplits, splitsAvailable, SPLITS_UNAVAILABLE_NOTE } from '../providers/splits.js';
 import { isAdmin } from './auth.js';
+import { listOwnerAttested, addOwnerAttested } from '../attested-records.js';
 
 export const router = Router();
 
@@ -225,18 +226,20 @@ router.get('/odds', async (req, res) => {
 });
 
 
-// Prelaunch archive: historical user-attested picks, separate from the model's independently logged track record.
-router.get('/prelaunch-record', (req, res) => res.json({
-  records:[{
-    date:'2026-10-08', league:'mlb', matchup:'Cleveland Guardians at Chicago White Sox',
-    selected:'Cleveland Guardians', pickType:'moneyline', confidence:54,
-    result:'win', finalScore:'CLE 9 - CWS 5', provenance:'user-attested prelaunch prediction',
-    issuedBeforeGame:'reported by owner; original timestamp not independently verified',
-    source:'https://www.mlb.com/guardians/video/steven-kwan-makes-the-catch-to-secure-game-4-victory'
-  }],
-  notice:'Prelaunch record is user-attested and excluded from the verified live-model win rate.'
-}));
+// Public owner-attested historical outcomes are separate from the timestamped
+// pregame model record and never affect the verified win-rate calculation.
+router.get('/prelaunch-record', (req, res) => res.json(listOwnerAttested()));
 
+// This is intentionally NOT a one-click fake backfill. The owner must provide
+// a completed game's details, acknowledge its provenance, and confirm the result.
+router.post('/admin/prelaunch-record', requireAdmin, (req, res) => {
+  try {
+    const result = addOwnerAttested(req.body);
+    res.status(result.created ? 201 : 200).json({ ok: true, ...result });
+  } catch (e) {
+    res.status(e.status || 500).json({ error: e.status ? e.message : 'Unable to save historical pick.' });
+  }
+});
 
 router.get('/verified-picks', (req,res) => {
  const rows=db.prepare(`SELECT id,date,league,home,away,pick_team,pick_type,line,confidence,status,issued_at,starts_at,graded_at
