@@ -93,6 +93,11 @@ async function authSubmit(kind, email, pw) {
   localStorage.setItem('sg_token', data.token);
   closeAuthModal();
   await refreshUser();
+  // Refresh the access gate after signing in from the admin page.
+  if (location.pathname === '/admin' || location.pathname === '/admin.html') {
+    location.reload();
+    return;
+  }
   toast(kind === 'register' ? 'Welcome to the Genius 🏆' : 'Signed in');
 }
 
