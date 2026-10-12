@@ -89,7 +89,7 @@ body {
   backdrop-filter: blur(14px); padding: 10px 0;
 }
 .ticker-inner { display: flex; width: max-content; animation: tick 22s linear infinite; animation-delay: -3s; font-size: 14px; color: var(--ink); will-change: transform; }
-.ticker-copy { display: inline-block; flex: 0 0 auto; min-width: 1240px; padding-right: 72px; }
+.ticker-copy { display: inline-block; flex: 0 0 auto; width: max-content; padding-right: 64px; }
 .ticker:focus-within .ticker-inner { animation-play-state: paused; }
 .ticker-inner .dot { color: var(--gold); margin: 0 14px; }
 .ticker-inner .live { color: #ff6b6b; font-weight: 700; }
