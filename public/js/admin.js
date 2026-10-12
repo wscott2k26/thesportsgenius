@@ -105,7 +105,15 @@ document.addEventListener('DOMContentLoaded', async () => {
   while (!(window.SG && 'user' in window.SG) && tries++ < 40) await new Promise(r => setTimeout(r, 100));
   const u = window.SG && window.SG.user;
   if (!u || !u.admin) {
-    document.getElementById('admin-gate').innerHTML = '<div class="card"><p class="reason">Admins only. Your email must be in ADMIN_EMAILS on the server.</p></div>';
+    const p = document.createElement('p');
+    p.className = 'reason';
+    p.textContent = u
+      ? 'This account is not an administrator yet. Ask the site owner to add your email to ADMIN_EMAILS.'
+      : 'Sign in or create a free account above. Admin access is granted separately by the site owner.';
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.appendChild(p);
+    document.getElementById('admin-gate').replaceChildren(card);
     return;
   }
   document.getElementById('admin-gate').style.display = 'none';
