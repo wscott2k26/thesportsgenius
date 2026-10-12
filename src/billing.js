@@ -14,8 +14,10 @@ let verifiedLivePrice=false;
 async function verifyLivePrice(){
  const secret=process.env.STRIPE_SECRET_KEY,priceId=process.env.STRIPE_PRICE_ID;
  if(!secret||!priceId){verifiedLivePrice=false;return}
- if(!secret.startsWith('sk_live_')){
-  verifiedLivePrice=false;console.error('[stripe preflight] FAIL: live secret key required');return;
+ if(!/^(sk|rk)_live_/.test(secret)){
+  verifiedLivePrice=false;
+  const keyType=/^(sk|rk)_test_/.test(secret)?'test key':/^pk_/.test(secret)?'publishable key':'unrecognized key';
+  console.error('[stripe preflight] FAIL: '+keyType+' cannot authorize live checkout');return;
  }
  try{
   const response=await fetch('https://api.stripe.com/v1/prices/'+encodeURIComponent(priceId),{
