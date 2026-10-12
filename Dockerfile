@@ -5,6 +5,11 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY public/ ./public/
 COPY src/ ./src/
+# Fail the image build before release if any backend test fails. Only an
+# ephemeral in-memory SQLite database is used; live /data is not touched.
+COPY test/ ./test/
+RUN DB_PATH=:memory: ADMIN_EMAILS=ledger-admin@example.test node --test test/*.test.js
+RUN rm -rf ./test
 ENV NODE_ENV=production
 ENV PORT=3000
 EXPOSE 3000
