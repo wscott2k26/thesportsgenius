@@ -100,6 +100,61 @@ function wireOffers() {
   };
 }
 
+
+/* Owner-attested historical outcomes — never counted in verified live-model results. */
+async function loadPrelaunch() {
+  const el = document.getElementById('prelaunch-list');
+  try {
+    const { res, data } = await api('/api/prelaunch-record');
+    if (!res.ok) throw Error(data.error || 'History unavailable');
+    const count = data.attested || {};
+    const items = (data.records || []).map(p =>
+      '<div class="score-row"><div class="team-line"><div>' +
+      '<div class="nm">' + esc(p.selected) + ' — ' + esc(String(p.result).toUpperCase()) + '</div>' +
+      '<div class="rec">' + esc(p.date) + ' · ' + esc(p.matchup) + ' · ' + esc(p.finalScore) + '</div>' +
+      '<div class="rec">' + esc(p.provenance) + ' — timestamp not independently verified</div>' +
+      '</div></div></div>').join('');
+    el.innerHTML = '<p class="sec-sub">Owner-attested: ' + Number(count.wins || 0) +
+      ' wins · ' + Number(count.losses || 0) + ' losses · ' + Number(count.pushes || 0) +
+      ' pushes. These do <b>not</b> count toward verified predictions.</p>' +
+      (items || '<p class="sec-sub">No historical picks recorded.</p>');
+  } catch (e) { el.textContent = e.message || 'Unable to load historical picks'; }
+}
+
+function wirePrelaunch() {
+  const form = document.getElementById('prelaunch-form');
+  const save = document.getElementById('hist-save');
+  const err = document.getElementById('hist-err');
+  if (!form || !save || !err) return;
+  form.addEventListener('submit', async event => {
+    event.preventDefault();
+    if (save.disabled) return;
+    if (!form.reportValidity()) return;
+    err.textContent = '';
+    if (!confirm('Record this historical result as OWNER-ATTESTED only? It will not change the verified record.')) return;
+    const payload = Object.fromEntries(new FormData(form).entries());
+    payload.ownerAttested = form.elements.namedItem('ownerAttested').checked;
+    save.disabled = true;
+    try {
+      const { res, data } = await api('/api/admin/prelaunch-record', {
+        method: 'POST', body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(data.error || 'Unable to record historical pick');
+      if (data.alreadyPresent) {
+        toast('Already in history — no duplicate added');
+      } else {
+        toast('Historical pick saved (owner-attested)');
+      }
+      if (data.created) form.reset();
+      await loadPrelaunch();
+    } catch (e) {
+      err.textContent = e.message || 'Save failed';
+    } finally {
+      save.disabled = false;
+    }
+  });
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
   let tries = 0;
   while (!(window.SG && 'user' in window.SG) && tries++ < 40) await new Promise(r => setTimeout(r, 100));
@@ -121,6 +176,8 @@ document.addEventListener('DOMContentLoaded', async () => {
   loadAffiliates();
   loadOffers();
   wireOffers();
+  wirePrelaunch();
+  loadPrelaunch();
   loadReport();
 
   document.getElementById('af-add').onclick = async () => {
