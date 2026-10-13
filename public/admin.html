@@ -46,6 +46,30 @@
     <h1 class="display" style="font-size:clamp(30px,5vw,52px)">ADMIN</h1>
 
 
+    <section aria-label="Private traffic analytics" id="admin-traffic-monitor">
+      <h2 class="sec-title" style="font-size:24px">Traffic Monitor</h2>
+      <p class="sec-sub">See actual tracked page loads—not server requests or unique visitors. Anonymous counts automatically refresh every 60 seconds.</p>
+      <div class="card" style="margin-bottom:20px">
+        <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <span class="league-tag">● TRAFFIC PULSE · UPDATES EVERY 60 SEC</span>
+          <label class="sec-sub" for="traffic-days">Report window
+            <select id="traffic-days" aria-label="Analytics period" style="margin-left:6px">
+              <option value="7">Last 7 days</option>
+              <option value="30">Last 30 days</option>
+            </select>
+          </label>
+        </div>
+        <div id="traffic-kpis" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px" aria-live="polite">
+          <div><p class="reason">Loading traffic…</p></div>
+        </div>
+        <p id="traffic-status" class="reason" role="status">Checking anonymous pageview totals…</p>
+        <div id="traffic-chart" style="margin-top:18px"></div>
+        <div id="traffic-breakdown" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;margin-top:18px"></div>
+        <p class="sec-sub" style="margin-top:16px">Times use UTC. Counts omit Do Not Track / Global Privacy Control visitors and some pages before tracking was installed. They cannot identify unique people or reliably separate all bots.</p>
+        <p><a class="btn-ghost" href="/growth-dashboard.html" style="display:inline-block">Open detailed traffic report →</a></p>
+      </div>
+    </section>
+
     <section aria-label="Track record" id="admin-track-record">
       <h2 class="sec-title" style="font-size:24px">Track Record</h2>
       <p class="sec-sub">The verified live record is calculated automatically from timestamped pregame predictions. Historical outcomes entered here remain <b>owner-attested</b>; they never change that verified record or its immutable ledger.</p>
