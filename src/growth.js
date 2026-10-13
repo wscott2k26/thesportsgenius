@@ -180,7 +180,7 @@ growthRouter.get('/share-kit',(req,res)=>{
 growthRouter.get('/privacy',(req,res)=>{
  const body='<section class="hero"><div class="league-tag">YOUR PRIVACY</div><h1 class="display">Privacy & Analytics</h1>'+
  '<p class="sub">How Sports Genius measures site usage and how to make your choice.</p></section>'+
- '<section class="card"><h2>Anonymous first-party counts</h2><p>Sports Genius collects daily aggregate counts of page views, sharing, bookmarks, copied captions and calendar actions, grouped by page and broad referral category. These counters do not save your IP address, name, account ID, cookies or full referring URL. Do Not Track and Global Privacy Control signals disable these counters.</p>'+
+ '<section class="card"><h2>Anonymous first-party counts</h2><p>Sports Genius collects daily aggregate counts of page views, sharing, bookmarks, copied captions and calendar actions, grouped by page and broad referral category. For the private traffic monitor, it also retains short-lived minute-level aggregate pageview counts for up to three days. These counters do not save your IP address, name, account ID, cookies or full referring URL. Do Not Track and Global Privacy Control signals disable these counters.</p>'+
  '<h2>Optional Google Analytics</h2><p>With your permission, Sports Genius may load Google Analytics 4. Google Analytics can use cookies and process browsing data according to Google privacy terms. It is off unless a Sports Genius-owned measurement ID is configured and you explicitly allow it. Declining does not prevent use of the site.</p>'+
  '<p><button type="button" class="btn-ghost" data-disable-analytics>Decline or withdraw optional analytics</button></p>'+
  '<h2>Device bookmarks</h2><p>Saved games are stored locally in your browser. Clearing browser storage will remove them. Signing in and favorite-team push reminders are optional and handled separately.</p>'+
@@ -191,23 +191,40 @@ const ga4Id=()=>/^G-[A-Z0-9]{4,16}$/.test(process.env.GA4_MEASUREMENT_ID||'')?pr
 growthApiRouter.get('/growth/config',(req,res)=>res.set('Cache-Control','public, max-age=300').json({ga4MeasurementId:ga4Id(),consentRequired:true}));
 // First-party analytics: daily counts only, never store IP, device, account, cookie or full referrer.
 db.exec('CREATE TABLE IF NOT EXISTS growth_daily(day TEXT NOT NULL,event TEXT NOT NULL,path TEXT NOT NULL,source TEXT NOT NULL,total INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,event,path,source))');
+ // Anonymous minute-level pageview totals for a rolling traffic pulse.
+ // No cookies, visitor identities, IPs, user agents, or full referrers are stored.
+db.exec('CREATE TABLE IF NOT EXISTS growth_minute(minute TEXT PRIMARY KEY,total INTEGER NOT NULL DEFAULT 0)');
+let lastGrowthPruneAt = 0;
 const events=new Set(['pageview','share','save','calendar','copy']);
 const sources=new Set(['direct','google','bing','social','referral','internal','email','other']);
 growthApiRouter.post('/growth/track',(req,res)=>{
  if(req.get('DNT')==='1'||req.get('Sec-GPC')==='1'||/bot|crawler|spider|headless|lighthouse/i.test(req.get('user-agent')||''))return res.sendStatus(204);
  const {event,path,source}=req.body||{};
  if(!events.has(event)||typeof path!=='string'||path.length>180||!/^\/[a-z0-9/-]*$/.test(path)||!sources.has(source))return res.sendStatus(400);
- db.prepare('INSERT INTO growth_daily(day,event,path,source,total) VALUES(?,?,?,?,1) ON CONFLICT(day,event,path,source) DO UPDATE SET total=total+1').run(new Date().toISOString().slice(0,10),event,path,source);
+ const now = new Date();
+ db.prepare('INSERT INTO growth_daily(day,event,path,source,total) VALUES(?,?,?,?,1) ON CONFLICT(day,event,path,source) DO UPDATE SET total=total+1').run(now.toISOString().slice(0,10),event,path,source);
+ if (event === 'pageview') {
+  db.prepare('INSERT INTO growth_minute(minute,total) VALUES(?,1) ON CONFLICT(minute) DO UPDATE SET total=total+1').run(now.toISOString().slice(0,16));
+  if (now.getTime()-lastGrowthPruneAt > 3600000) {
+   db.prepare('DELETE FROM growth_minute WHERE minute < ?').run(new Date(now.getTime()-3*86400000).toISOString().slice(0,16));
+   lastGrowthPruneAt=now.getTime();
+  }
+ }
  res.sendStatus(204);
 });
 growthApiRouter.get('/growth/summary',(req,res)=>{
  if(!req.user||!isAdmin(req.user.email))return res.sendStatus(403);
- const days=Math.min(90,Math.max(1,Number(req.query.days)||30));
+ const days=Math.min(90,Math.max(1,parseInt(req.query.days,10)||30));
  const from=new Date(Date.now()-(days-1)*86400000).toISOString().slice(0,10);
  res.set('Cache-Control','no-store').json({
  byDay:db.prepare('SELECT day,event,SUM(total) total FROM growth_daily WHERE day>=? GROUP BY day,event ORDER BY day DESC').all(from),
  byPage:db.prepare('SELECT path,SUM(total) views FROM growth_daily WHERE day>=? AND event=? GROUP BY path ORDER BY views DESC LIMIT 20').all(from,'pageview'),
  bySource:db.prepare('SELECT source,SUM(total) views FROM growth_daily WHERE day>=? AND event=? GROUP BY source ORDER BY views DESC').all(from,'pageview'),
- note:'Anonymous aggregate event counts; not verified unique visitors or Google Analytics.'
+ recent15m: db.prepare('SELECT COALESCE(SUM(total),0) views FROM growth_minute WHERE minute >= ?').get(new Date(Date.now()-15*60000).toISOString().slice(0,16)).views,
+ recent5m: db.prepare('SELECT COALESCE(SUM(total),0) views FROM growth_minute WHERE minute >= ?').get(new Date(Date.now()-5*60000).toISOString().slice(0,16)).views,
+ recentMetricAvailable: true,
+ windowDays: days,
+ reportedAt: new Date().toISOString(),
+ note:'Anonymous first-party pageviews and action counts, collected only on instrumented pages when visitor privacy settings permit. Not verified unique people, bots-free traffic, or GA4. Time buckets use UTC.'
  });
 });
