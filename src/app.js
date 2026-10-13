@@ -36,7 +36,7 @@ const pub = path.join(process.cwd(), 'public');
 app.use(express.static(pub, { extensions: ['html'] }));
 
 // SPA-ish fallbacks for pretty page URLs
-for (const p of ['/scores', '/chat', '/teams', '/admin', '/offers', '/parlay', '/tracker', '/alerts', '/splits', '/history', '/photo-credits', '/game']) {
+for (const p of ['/scores', '/chat', '/teams', '/admin', '/offers', '/parlay', '/tracker', '/alerts', '/splits', '/history', '/photo-credits', '/game', '/josie']) {
   app.get(p, (req, res) => res.sendFile(path.join(pub, `${p.slice(1)}.html`)));
 }
 

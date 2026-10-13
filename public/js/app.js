@@ -302,6 +302,7 @@ function pickCard(p) {
   const totals = totalsShopping(p);
   const splits = splitsNote(p);
   return `<div class="card">
+    <div class="josie-pick-mark"><span aria-hidden="true">🐩</span> JOSIE'S GAME-DAY RADAR <span class="josie-pick-model">MODEL-BASED</span></div>
     <div class="league-tag">${esc(p.league.toUpperCase())}</div>
     <div class="matchup sg-pick-matchup"><span class="sg-team">${sgTeamLogo(p.league,p.away.split(' ')[0])}<span>${esc(p.away.replace(/^[A-Z]{2,4} /, ''))}</span></span><span class="sg-versus">VS</span><span class="sg-team">${sgTeamLogo(p.league,p.home.split(' ')[0])}<span>${esc(p.home.replace(/^[A-Z]{2,4} /, ''))}</span></span></div>
     <span class="pick-pill">PICK ${esc(p.pickTeam.abbr)} ${typeLabel}</span>
