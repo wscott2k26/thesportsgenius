@@ -1,6 +1,7 @@
 import {Router} from 'express';
 import {db} from './db.js';
 import {isAdmin} from './routes/auth.js';
+import {additionalGuides} from './organic-guides.js';
 import {LEAGUES,LEAGUE_KEYS,getScoreboard,fetchHistoricalScoreboard} from './providers/espn.js';
 
 export const growthRouter=Router(), growthApiRouter=Router();
@@ -13,7 +14,7 @@ const niceDate=x=>new Date(x).toLocaleString('en-US',{timeZone:'America/New_York
 const label=k=>LEAGUES[k]?.label||k.toUpperCase();
 const link=(label,url)=>'<a class="btn-ghost" href="'+esc(url)+'" style="display:inline-block;margin:8px 8px 8px 0">'+esc(label)+' →</a>';
 const boundedFetch=(url,opts)=>fetch(url,{...opts,signal:AbortSignal.timeout(8000)});
-const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds','/privacy'];
+const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds','/tools/odds-calculator',...Object.keys(additionalGuides).map(slug=>'/guides/'+slug),'/privacy'];
 function shell(title,desc,url,body,structured=null,robots='index, follow'){
  const json=structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'';
  const section=url.split("/")[2];
@@ -26,7 +27,7 @@ function shell(title,desc,url,body,structured=null,robots='index, follow'){
  '<meta property="og:image" content="'+socialImage+'"><meta name="twitter:image" content="'+socialImage+'"><meta name="twitter:card" content="summary_large_image"><link rel="alternate" type="application/rss+xml" title="Sports Genius Matchups" href="/feed.xml"><link rel="stylesheet" href="/css/style.css">'+json+'</head><body>'+
  '<div class="bg-stage" aria-hidden="true"></div><div class="bg-veil" aria-hidden="true"></div>'+
  '<header class="nav"><a class="brand" href="/">🧠 <b>THE SPORTS GENIUS</b></a><span class="age-badge">21+</span>'+
- '<nav><a class="link" href="/">Picks</a><a class="link" href="/scores">Scores</a><a class="link" href="/matchups">Matchups</a><a class="link" href="/guides">Guides</a><a class="link" href="/teams">My Teams</a></nav>'+
+ '<nav><a class="link" href="/">Picks</a><a class="link" href="/scores">Scores</a><a class="link" href="/matchups">Matchups</a><a class="link" href="/guides">Guides</a><a class="link" href="/tools/odds-calculator">Odds calculator</a><a class="link" href="/teams">My Teams</a></nav>'+
  '<div id="nav-auth" style="display:flex;gap:10px;align-items:center"></div></header>'+
  '<div class="ticker"><span class="ticker-inner">Loading scores…</span></div><main class="wrap">'+body+'</main>'+
  '<footer>Schedules and scores supplied by ESPN. Broadcasts may change. Information only, not gambling advice. 21+. Help: 1-800-GAMBLER. <a href="/share-kit">Share</a> · <a href="/privacy">Privacy & analytics</a></footer>'+
@@ -147,16 +148,41 @@ const guides={
  ['Research responsibly','No pick is guaranteed, and gambling can cause harm. This guide is educational rather than betting advice. U.S. support: 1-800-GAMBLER.']
  ]}
 };
+Object.assign(guides,additionalGuides);
+
+// Free educational calculator: pure client-side math, no odds feed, account or wager.
+growthRouter.get('/tools/odds-calculator',(req,res)=>{
+ const body='<section class="hero"><div class="league-tag">FREE TWO-WAY ODDS TOOL</div><h1 class="display">AMERICAN ODDS CALCULATOR</h1>'+
+ '<p class="sub">Convert two American moneyline prices into implied probabilities and see how the combined prices include a bookmaker margin. Educational only, no sportsbook account needed.</p></section>'+
+ '<section class="card" style="margin:16px 0"><h2>Convert two-way moneyline odds</h2>'+
+ '<form id="odds-calc-form"><div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">' +
+ '<div class="field"><label for="side-a">Side A (American odds)</label><input id="side-a" name="a" type="text" inputmode="numeric" value="+150" placeholder="+150" required></div>'+
+ '<div class="field"><label for="side-b">Side B (American odds)</label><input id="side-b" name="b" type="text" inputmode="numeric" value="-170" placeholder="-170" required></div></div>'+
+ '<button type="submit" class="btn-gold">Calculate probabilities</button></form>'+
+ '<p id="odds-calc-output" class="reason" style="margin-top:18px" role="status" aria-live="polite">Loading calculator…</p>'+
+ '<p class="sec-sub">For two-outcome markets only. A three-way soccer market, a draw price or a special prop requires a different calculation. These are not win predictions or promised fair prices.</p></section>'+
+ '<section class="card" style="margin:16px 0"><h2>How does American odds probability work?</h2>'+
+ '<p>For positive American odds +A, the implied probability is 100 ÷ (A + 100). For negative odds -A, it is A ÷ (A + 100), using the absolute value A. For example, +150 converts to 40% while -150 converts to 60%. These percentages describe the quoted prices, not the actual outcomes of a game.</p>'+
+ '<h2>Why do two moneylines add to more than 100%?</h2><p>Sportsbooks commonly quote both sides with a built-in margin, also called overround or vig. Two prices of -110 and -110 imply about 52.38% each. Added together, that is roughly 104.76%; the excess 4.76 percentage points is the overround, not a guaranteed profit or a probability that either team wins.</p>'+
+ '<h2>What does no-vig normalization mean?</h2><p>A common approximation divides each quoted implied probability by their combined total so they add to 100%. It proportionally removes the overround but does not make the result a calibrated forecast. This calculator cannot determine a team’s true probability or whether a price is favorable.</p>'+
+ '<h2>Should I use these results for a bet?</h2><p>Use the output only to understand quoted prices. Current odds, lineup availability, settlement terms and responsible-play limits all matter. No number guarantees a result. For help with gambling in the U.S., call or text 1-800-GAMBLER.</p></section>' +
+ link('Read the complete odds guide','/guides/understanding-odds')+link('How to research an NFL game','/guides/nfl-matchup-research-checklist')+
+ '<script type="module" src="/js/odds-calculator.js"></script>';
+ res.set('Cache-Control','public, max-age=300').send(shell('American Odds Calculator — Implied Probability & No-Vig | Sports Genius',
+ 'Free two-way American moneyline odds calculator: convert to implied probability, decimal odds, sportsbook overround and normalized no-vig percentages.',
+ '/tools/odds-calculator',body,{"@context":"https://schema.org","@type":"WebApplication",name:"Sports Genius American Odds Calculator",applicationCategory:"UtilitiesApplication",operatingSystem:"Any",url:ROOT+'/tools/odds-calculator',description:"Free educational moneyline and implied probability converter."}));
+});
+
 growthRouter.get('/guides',(req,res)=>{
  const body='<section class="hero"><h1 class="display">SPORTS RESEARCH GUIDES</h1><p class="sub">Original educational explainers without win guarantees or made-up data.</p></section>'+
- Object.entries(guides).map(([slug,g])=>'<article class="card" style="margin:15px 0"><h2>'+esc(g.title)+'</h2><p>'+esc(g.desc)+'</p>'+link('Read the guide','/guides/'+slug)+'</article>').join('')+link('Current matchups','/matchups');
+ Object.entries(guides).map(([slug,g])=>'<article class="card" style="margin:15px 0"><h2>'+esc(g.title)+'</h2><p>'+esc(g.desc)+'</p>'+link('Read the guide','/guides/'+slug)+'</article>').join('')+link('Current matchups','/matchups')+link('Free odds calculator','/tools/odds-calculator');
  res.send(shell('Sports Research Guides | Sports Genius','Read helpful sports matchup analysis and sports odds educational guides.','/guides',body));
 });
 growthRouter.get('/guides/:slug',(req,res)=>{
  const g=guides[req.params.slug];if(!g)return res.sendStatus(404);
  const body='<article><section class="hero"><div class="league-tag">THE SPORTS GENIUS GUIDE</div><h1 class="display" style="font-size:clamp(30px,5vw,55px)">'+esc(g.title)+'</h1><p class="sub">'+esc(g.desc)+'</p></section>'+
  g.parts.map(([heading,content])=>'<section class="card" style="margin:15px 0"><h2>'+esc(heading)+'</h2><p>'+esc(content)+'</p></section>').join('')+
- link('Find current games','/matchups')+link('All guides','/guides')+'</article>';
+ link('Find current games','/matchups')+link('Free odds calculator','/tools/odds-calculator')+link('All guides','/guides')+'</article>';
  res.send(shell(g.title+' | Sports Genius',g.desc,'/guides/'+req.params.slug,body,{"@context":"https://schema.org","@type":"Article",headline:g.title,description:g.desc,mainEntityOfPage:ROOT+'/guides/'+req.params.slug,author:{"@type":"Organization",name:"The Sports Genius"},publisher:{"@type":"Organization",name:"The Sports Genius"}}));
 });
 growthRouter.get('/saved-games',(req,res)=>{
@@ -168,11 +194,15 @@ growthRouter.get('/share-kit',(req,res)=>{
  const examples=[
  ['Game day','Before kickoff, check current matchups, team records and game times on Sports Genius. No guarantees, just useful research.','/matchups'],
  ['Live research','Scores, where-to-watch listings and matchup context in one place. Explore today’s games:','/matchups'],
- ['Learn sports odds','Moneyline and spread terms can be confusing. Here is a free, no-hype explainer:','/guides/understanding-odds']
+ ['Learn sports odds','Moneyline and spread terms can be confusing. Here is a free, no-hype explainer:','/guides/understanding-odds','facebook'],
+ ['Free odds calculator','Want to understand what +150 or -170 actually means? Our free two-way odds calculator breaks down implied probability and sportsbook margin.','/tools/odds-calculator','youtube'],
+ ['NFL game research','Before kickoff, here is a free NFL checklist for injury reports, matchups and game context. Research, not a guaranteed pick.','/guides/nfl-matchup-research-checklist','facebook'],
+ ['MLB postseason checklist','How do probable pitchers, bullpen workload and confirmed lineups change a postseason matchup? Start with our free checklist.','/guides/mlb-postseason-pitching-bullpen-guide','tiktok'],
+ ['Check prediction records','A winning screenshot is not the same as a timestamped prediction. Here is how to check the evidence.','/guides/how-to-verify-sports-prediction-records','youtube']
  ];
  const body='<section class="hero"><h1 class="display">SHARE SPORTS GENIUS</h1><p class="sub">Organic social captions with trackable links, no invented results or false guarantees.</p></section>'+
- examples.map(([title,caption,url])=>{
- const text=caption+' '+ROOT+url+'?utm_source=social&utm_medium=organic&utm_campaign=matchup_launch';
+ examples.map(([title,caption,url,platform])=>{
+ const text=caption+' '+ROOT+url+'?utm_source='+encodeURIComponent(platform||'social')+'&utm_medium=organic&utm_campaign=sports_research_launch';
  return '<section class="card" style="margin:14px 0"><h2>'+esc(title)+'</h2><p>'+esc(text)+'</p><button class="btn-gold" type="button" data-copy-caption="'+esc(text)+'">Copy caption</button></section>';
  }).join('')+link('Browse games','/matchups');
  res.send(shell('Sports Genius Social Sharing Kit','Ready-to-share sports game research captions.','/share-kit',body,null,'noindex, follow'));
