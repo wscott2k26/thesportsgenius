@@ -61,7 +61,7 @@ test('crawlable calculator and evergreen content are in dynamic sitemap and link
    assert.ok(html.includes(g.title));
    assert.match(html,/"@type":"Article"/);
    assert.match(html,/rel="canonical"/);
-   assert.ok(g.parts.every(([h,c])=>html.includes(h)),slug);
+   assert.ok(g.parts.every(([h])=>html.includes(h.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;'))),slug);
   }
   const kit=await (await fetch(origin+'/share-kit')).text();
   assert.match(kit,/utm_source=facebook/);
