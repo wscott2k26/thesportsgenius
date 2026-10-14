@@ -1,8 +1,9 @@
 /* Scores page: league tabs + live scoreboard cards */
 import { api, esc, fmtTime, isToday, toast } from './app.js';
 
-const LEAGUE_META = { nfl: ['NFL', '🏈'], nba: ['NBA', '🏀'], mlb: ['MLB', '⚾'], nhl: ['NHL', '🏒'], ncaab: ['NCAA Basketball', 'NCAA'], ncaaf: ['College FB', '🎓'] };
-let current = 'nfl';
+const LEAGUE_META = { nfl: ['NFL', '🏈'], nba: ['NBA', '🏀'], wnba: ['WNBA', '🏀'], mlb: ['MLB', '⚾'], nhl: ['NHL', '🏒'], ncaab: ['NCAA Basketball', 'NCAA'], ncaaf: ['College FB', '🎓'] };
+let current = new URLSearchParams(location.search).get('league')?.toLowerCase() || 'nfl';
+if (!Object.prototype.hasOwnProperty.call(LEAGUE_META, current)) current = 'nfl';
 
 function teamLine(t, isHome) {
   return `<div class="team-line">
