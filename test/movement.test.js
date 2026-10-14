@@ -8,6 +8,10 @@ import {
   getMovements, getLineHistory, movementSummary, MOVE_THRESHOLDS,
 } from '../src/providers/movement.js';
 
+// Use rolling UTC timestamps so movement's three-day lookback stays testable.
+const recentEarlier = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+const recentLater = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+
 beforeEach(() => { db.prepare('DELETE FROM odds_history').run(); });
 
 function snapRow(game_key, book, market, side, price, line, ts) {
@@ -89,8 +93,8 @@ describe('snapshotOdds + getMovements', () => {
     assert.equal(db.prepare('SELECT COUNT(*) c FROM odds_history').get().c, 6);
   });
   it('detects a real move between two snapshots', () => {
-    snapRow('g2', 'draftkings', 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
-    snapRow('g2', 'draftkings', 'h2h', 'home', -135, null, '2026-10-10 12:00:00');
+    snapRow('g2', 'draftkings', 'h2h', 'home', -110, null, recentEarlier);
+    snapRow('g2', 'draftkings', 'h2h', 'home', -135, null, recentLater);
     const ms = getMovements('nfl');
     assert.equal(ms.length, 1);
     assert.equal(ms[0].moves.length, 1);
@@ -98,13 +102,13 @@ describe('snapshotOdds + getMovements', () => {
     assert.equal(ms[0].moves[0].dir, 'toward');
   });
   it('needs two snapshots before reporting movement', () => {
-    snapRow('g3', 'draftkings', 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
+    snapRow('g3', 'draftkings', 'h2h', 'home', -110, null, recentEarlier);
     assert.equal(getMovements('nfl').length, 0);
   });
   it('flags steam when 3+ books move together', () => {
     for (const b of ['draftkings', 'fanduel', 'betmgm']) {
-      snapRow('g4', b, 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
-      snapRow('g4', b, 'h2h', 'home', -130, null, '2026-10-10 12:00:00');
+      snapRow('g4', b, 'h2h', 'home', -110, null, recentEarlier);
+      snapRow('g4', b, 'h2h', 'home', -130, null, recentLater);
     }
     const ms = getMovements('nfl');
     assert.equal(ms.length, 1);
@@ -119,15 +123,15 @@ describe('snapshotOdds + getMovements', () => {
 
 describe('getLineHistory + movementSummary', () => {
   it('returns ordered points for a sparkline', () => {
-    snapRow('g5', 'draftkings', 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
-    snapRow('g5', 'draftkings', 'h2h', 'home', -120, null, '2026-10-10 11:00:00');
-    snapRow('g5', 'draftkings', 'h2h', 'home', -130, null, '2026-10-10 12:00:00');
+    snapRow('g5', 'draftkings', 'h2h', 'home', -110, null, recentEarlier);
+    snapRow('g5', 'draftkings', 'h2h', 'home', -120, null, new Date(Date.now() - 90 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' '));
+    snapRow('g5', 'draftkings', 'h2h', 'home', -130, null, recentLater);
     const pts = getLineHistory('g5', { book: 'draftkings', market: 'h2h', side: 'home' });
     assert.deepEqual(pts.map(p => p.price), [-110, -120, -130]);
   });
   it('summarizes open/current per book', () => {
-    snapRow('g6', 'draftkings', 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
-    snapRow('g6', 'draftkings', 'h2h', 'home', -140, null, '2026-10-10 12:00:00');
+    snapRow('g6', 'draftkings', 'h2h', 'home', -110, null, recentEarlier);
+    snapRow('g6', 'draftkings', 'h2h', 'home', -140, null, recentLater);
     const s = movementSummary('g6', 'h2h', 'home');
     assert.ok(s.draftkings);
     assert.equal(s.draftkings.open.price, -110);
