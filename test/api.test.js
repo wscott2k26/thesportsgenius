@@ -84,7 +84,7 @@ describe('picks API', () => {
   });
   it('free tier only gets 2 leagues', async () => {
     const { data } = await req('GET', '/api/picks');
-    assert.deepEqual(data.lockedLeagues.sort(), ['mlb', 'ncaab', 'ncaaf', 'nhl']);
+    assert.deepEqual(data.lockedLeagues.sort(), ['mlb', 'ncaab', 'ncaaf', 'nhl', 'wnba']);
   });
   it('track-record starts calibrating', async () => {
     const { data } = await req('GET', '/api/track-record');
