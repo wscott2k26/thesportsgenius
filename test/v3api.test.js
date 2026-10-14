@@ -7,6 +7,10 @@ import { db } from '../src/db.js';
 import { installStub } from './fixtures.mjs';
 import app from '../src/app.js';
 
+// Use rolling UTC timestamps so movement's three-day lookback stays testable.
+const recentEarlier = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+const recentLater = new Date(Date.now() - 1 * 60 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' ');
+
 let server, base;
 const realFetch = globalThis.fetch;
 
@@ -72,10 +76,10 @@ describe('movement + alerts routes', () => {
       await req('POST', '/api/favorites', { token,
         body: { team_key: 'nfl-kc', league: 'nfl', abbr: 'KC', name: 'Kansas City Chiefs' } });
       // movement on a Chiefs game + movement on an unrelated game
-      snap('g-kc', 'Kansas City Chiefs', 'Buffalo Bills', 'draftkings', 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
-      snap('g-kc', 'Kansas City Chiefs', 'Buffalo Bills', 'draftkings', 'h2h', 'home', -140, null, '2026-10-10 12:00:00');
-      snap('g-other', 'Dallas Cowboys', 'Philadelphia Eagles', 'draftkings', 'h2h', 'home', -110, null, '2026-10-10 10:00:00');
-      snap('g-other', 'Dallas Cowboys', 'Philadelphia Eagles', 'draftkings', 'h2h', 'home', -140, null, '2026-10-10 12:00:00');
+      snap('g-kc', 'Kansas City Chiefs', 'Buffalo Bills', 'draftkings', 'h2h', 'home', -110, null, recentEarlier);
+      snap('g-kc', 'Kansas City Chiefs', 'Buffalo Bills', 'draftkings', 'h2h', 'home', -140, null, recentLater);
+      snap('g-other', 'Dallas Cowboys', 'Philadelphia Eagles', 'draftkings', 'h2h', 'home', -110, null, recentEarlier);
+      snap('g-other', 'Dallas Cowboys', 'Philadelphia Eagles', 'draftkings', 'h2h', 'home', -140, null, recentLater);
       const all = await req('GET', '/api/alerts');
       assert.equal(all.data.alerts.length, 2);
       const mine = await req('GET', '/api/alerts?mine=1', { token });
