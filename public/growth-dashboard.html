@@ -5,7 +5,7 @@
 <header class="nav"><a class="brand" href="/">🧠 <b>THE SPORTS GENIUS</b></a><nav><a class="link" href="/matchups">Matchups</a><a class="link" href="/share-kit">Share Kit</a></nav></header>
 <main class="wrap"><section class="hero"><div class="league-tag">PRIVATE TRAFFIC REPORT</div><h1 class="display">ORGANIC TRAFFIC</h1>
 <p class="sub">Anonymous, first-party pageviews and return-action totals. This is not Google Analytics and does not identify unique visitors.</p></section>
-<section class="card"><h2>Recent site activity</h2><p id="summary-status">Checking admin access…</p><div id="summary-data" style="overflow:auto"></div>
+<section class="card"><h2>Recent site activity</h2><p id="summary-status">Checking admin access…</p><div id="owner-traffic" style="margin:16px 0"></div><div id="summary-data" style="overflow:auto"></div>
 <p class="reason">Metrics honor Do Not Track / Global Privacy Control. Counts omit bot user agents but may include repeated visits. They do not store IP addresses, account identities, cookies or full referrers.</p></section></main>
 <footer>Private admin report · The Sports Genius</footer>
 <script type="module" src="/js/app.js"></script>
@@ -19,6 +19,13 @@ const r=await fetch('/api/growth/summary?days=30',{headers});
 if(r.status===403){status.textContent='Admin access required. Sign in with an account listed in ADMIN_EMAILS.';return}
 if(!r.ok)throw Error('Metrics are unavailable');
 const d=await r.json();status.textContent='Last 30 days (UTC)';
+// Only expose owner-traffic exclusion after the server verifies admin access.
+const owner=document.getElementById('owner-traffic'),ownerKey='sg_owner_traffic_excluded_v1';
+const toggle=document.createElement('button');toggle.type='button';toggle.className='btn-gold';
+const render=()=>{toggle.textContent=localStorage.getItem(ownerKey)==='yes'?'Include my test visits':'Exclude my test visits (this browser)'};
+toggle.onclick=()=>{localStorage.setItem(ownerKey,localStorage.getItem(ownerKey)==='yes'?'no':'yes');render()};
+const note=document.createElement('p');note.className='reason';note.textContent='Affects future visits only, in this browser. Does not delete historical counts. Excluded browsing skips both first-party tracking and optional GA4.';
+owner.replaceChildren(toggle,note);render();
 const table=(name,rows,k,v)=>'<h3>'+esc(name)+'</h3><table style="width:100%;text-align:left"><thead><tr><th>'+esc(k)+'</th><th>'+esc(v)+'</th></tr></thead><tbody>'+
  rows.map(x=>'<tr><td>'+esc(x[k])+'</td><td>'+esc(x[v])+'</td></tr>').join('')+'</tbody></table>';
 el.innerHTML=table('Top pages',d.byPage,'path','views')+table('Attribution sources',d.bySource,'source','views');
