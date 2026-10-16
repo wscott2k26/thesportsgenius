@@ -4,7 +4,8 @@
  const valid=u=>{try{const x=new URL(u,location.origin);return x.origin===location.origin&&/^\/matchup\/(nfl|nba|mlb|nhl|ncaab|ncaaf)\/\d{1,20}\/\d{8}$/.test(x.pathname)?x.pathname:null}catch{return null}};
  const esc=s=>String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const saved=()=>{try{const a=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(a)?a.filter(x=>valid(x.url)).slice(0,50):[]}catch{return []}};
- const trackingAllowed=()=>navigator.doNotTrack!=='1'&&navigator.globalPrivacyControl!==true;
+ const ownerExcluded=()=>{try{return localStorage.getItem('sg_owner_traffic_excluded_v1')==='yes'}catch{return false}};
+ const trackingAllowed=()=>!ownerExcluded()&&navigator.doNotTrack!=='1'&&navigator.globalPrivacyControl!==true;
  const source=()=>{
    const q=new URLSearchParams(location.search);
    const campaign=(q.get('utm_source')||'').toLowerCase();
@@ -17,6 +18,10 @@
  };
  const track=event=>{
   if(!trackingAllowed())return;
+  // GA4 is optional and only receives engagement events after visitor consent.
+  if(event!=='pageview'&&window.__sgGaLoaded&&typeof window.gtag==='function'){
+   window.gtag('event','sg_'+event,{event_category:'engagement'});
+  }
   const payload=JSON.stringify({event,path:location.pathname,source:source()});
   try{const blob=new Blob([payload],{type:'application/json'});if(navigator.sendBeacon&&navigator.sendBeacon('/api/growth/track',blob))return}catch{}
   fetch('/api/growth/track',{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true,credentials:'omit'}).catch(()=>{});
@@ -70,7 +75,15 @@
   const calendar=e.target.closest('[data-calendar-game]');
   if(calendar){ics(calendar.dataset.gameName,calendar.dataset.calendarGame);return}
   const caption=e.target.closest('[data-copy-caption]');
-  if(caption){copy(caption.dataset.copyCaption);track('copy')}
+  if(caption){copy(caption.dataset.copyCaption);track('copy');return}
+  // Count outbound YouTube viewing/subscription actions without storing full URLs.
+  const anchor=e.target.closest('a[href]');
+  if(anchor){try{
+   const url=new URL(anchor.href,location.origin);
+   if(url.hostname==='youtube.com'||url.hostname.endsWith('.youtube.com')||url.hostname==='youtu.be'){
+    track(url.searchParams.get('sub_confirmation')==='1'?'subscribe':'youtube');
+   }
+  }catch{}}
  });
  const consentKey='sg_ga4_consent_v1';
  async function optionalAnalytics(){
