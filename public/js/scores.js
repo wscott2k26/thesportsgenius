@@ -41,8 +41,11 @@ async function load() {
     const live = events.filter(e => e.status.state === 'in');
     const upcoming = events.filter(e => e.status.state === 'pre' && isToday(e.date));
     const done = events.filter(e => e.status.state === 'post' && isToday(e.date));
+    // Show today's games first; on off-days show the next scheduled games instead of a blank scoreboard.
     const ordered = [...live, ...upcoming, ...done];
-    wrap.innerHTML = ordered.length ? ordered.map(card).join('')
+    const nextGames = events.filter(e => e.status.state === 'pre' && new Date(e.date).getTime() >= Date.now()).slice(0, 16);
+    const displayGames = ordered.length ? ordered : nextGames;
+    wrap.innerHTML = displayGames.length ? displayGames.map(card).join('')
       : '<div class="card"><p class="reason">No games on the schedule right now.</p></div>';
     const d = document.getElementById('delayed-note');
     if (d) d.style.display = lg.delayed ? '' : 'none';
