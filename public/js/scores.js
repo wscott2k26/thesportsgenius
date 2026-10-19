@@ -35,8 +35,19 @@ function card(e) {
 async function load() {
   const wrap = document.getElementById('scores-wrap');
   try {
-    const { data } = await api('/api/scores?league=' + current);
-    const lg = data.leagues[current] || {};
+    const { res, data } = await api('/api/scores?league=' + current);
+    if (!res.ok || !data?.leagues?.[current]) throw new Error('score_service_unavailable');
+    const lg = data.leagues[current];
+    const warning = document.getElementById('delayed-note');
+    // Distinguish a provider outage from a legitimate off-day with zero games.
+    if (lg.error && !(lg.events || []).length) {
+      if (warning) {
+        warning.textContent = '⚠ Live scores temporarily unavailable. Please try again shortly.';
+        warning.style.display = '';
+      }
+      wrap.innerHTML = '<div class="card"><p class="reason">Live scores are temporarily unavailable. Please try refreshing soon.</p></div>';
+      return;
+    }
     const events = [...(lg.events || [])].sort((a, b) => new Date(a.date) - new Date(b.date));
     const live = events.filter(e => e.status.state === 'in');
     const upcoming = events.filter(e => e.status.state === 'pre' && isToday(e.date));
@@ -47,9 +58,16 @@ async function load() {
     const displayGames = ordered.length ? ordered : nextGames;
     wrap.innerHTML = displayGames.length ? displayGames.map(card).join('')
       : '<div class="card"><p class="reason">No games on the schedule right now.</p></div>';
-    const d = document.getElementById('delayed-note');
-    if (d) d.style.display = lg.delayed ? '' : 'none';
+    if (warning) {
+      warning.textContent = '⚠ Live feed hiccup — showing the last cached scores.';
+      warning.style.display = lg.delayed ? '' : 'none';
+    }
   } catch {
+    const warning = document.getElementById('delayed-note');
+    if (warning) {
+      warning.textContent = '⚠ Live score service temporarily unreachable.';
+      warning.style.display = '';
+    }
     wrap.innerHTML = '<div class="card"><p class="reason">Scores unavailable right now. Try refreshing.</p></div>';
   }
 }
