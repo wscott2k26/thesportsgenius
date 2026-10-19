@@ -33,7 +33,8 @@ function normTeam(comp) {
     winner: comp.winner === true,
     color: t.color || '888888',
     alternateColor: t.alternateColor || null,
-    logo: (t.logos && t.logos[0] && t.logos[0].href) || '',
+    // ESPN scoreboards provide a direct team.logo URL; other endpoints use logos[].href.
+    logo: t.logo || t.logoDark || (t.logos && t.logos[0] && t.logos[0].href) || '',
     record: (comp.records && comp.records[0] && comp.records[0].summary) || '',
   };
 }
