@@ -224,15 +224,21 @@ db.exec('CREATE TABLE IF NOT EXISTS growth_daily(day TEXT NOT NULL,event TEXT NO
  // Anonymous minute-level pageview totals for a rolling traffic pulse.
  // No cookies, visitor identities, IPs, user agents, or full referrers are stored.
 db.exec('CREATE TABLE IF NOT EXISTS growth_minute(minute TEXT PRIMARY KEY,total INTEGER NOT NULL DEFAULT 0)');
+// Anonymous campaign counters contain ONLY approved campaign tags and totals, never visitor identifiers.
+db.exec('CREATE TABLE IF NOT EXISTS growth_campaign_daily(day TEXT NOT NULL,event TEXT NOT NULL,path TEXT NOT NULL,source TEXT NOT NULL,campaign TEXT NOT NULL,total INTEGER NOT NULL DEFAULT 0,PRIMARY KEY(day,event,path,source,campaign))');
 let lastGrowthPruneAt = 0;
 const events=new Set(['pageview','share','save','calendar','copy']);
-const sources=new Set(['direct','google','bing','social','referral','internal','email','other']);
+const sources=new Set(['direct','google','bing','social','tiktok','youtube','facebook','instagram','reddit','x','referral','internal','email','other']);
+const campaignTags=new Set(['josie_reacts','josie_scores','josie_picks','game_day','launch_week']);
 growthApiRouter.post('/growth/track',(req,res)=>{
  if(req.get('DNT')==='1'||req.get('Sec-GPC')==='1'||/bot|crawler|spider|headless|lighthouse/i.test(req.get('user-agent')||''))return res.sendStatus(204);
- const {event,path,source}=req.body||{};
+ const {event,path,source,campaign}=req.body||{};
  if(!events.has(event)||typeof path!=='string'||path.length>180||!/^\/[a-z0-9/-]*$/.test(path)||!sources.has(source))return res.sendStatus(400);
  const now = new Date();
  db.prepare('INSERT INTO growth_daily(day,event,path,source,total) VALUES(?,?,?,?,1) ON CONFLICT(day,event,path,source) DO UPDATE SET total=total+1').run(now.toISOString().slice(0,10),event,path,source);
+ if(event==='pageview' && typeof campaign==='string' && campaignTags.has(campaign)) {
+  db.prepare('INSERT INTO growth_campaign_daily(day,event,path,source,campaign,total) VALUES(?,?,?,?,?,1) ON CONFLICT(day,event,path,source,campaign) DO UPDATE SET total=total+1').run(now.toISOString().slice(0,10),event,path,source,campaign);
+ }
  if (event === 'pageview') {
   db.prepare('INSERT INTO growth_minute(minute,total) VALUES(?,1) ON CONFLICT(minute) DO UPDATE SET total=total+1').run(now.toISOString().slice(0,16));
   if (now.getTime()-lastGrowthPruneAt > 3600000) {
@@ -250,6 +256,7 @@ growthApiRouter.get('/growth/summary',(req,res)=>{
  byDay:db.prepare('SELECT day,event,SUM(total) total FROM growth_daily WHERE day>=? GROUP BY day,event ORDER BY day DESC').all(from),
  byPage:db.prepare('SELECT path,SUM(total) views FROM growth_daily WHERE day>=? AND event=? GROUP BY path ORDER BY views DESC LIMIT 20').all(from,'pageview'),
  bySource:db.prepare('SELECT source,SUM(total) views FROM growth_daily WHERE day>=? AND event=? GROUP BY source ORDER BY views DESC').all(from,'pageview'),
+ byCampaign:db.prepare('SELECT campaign,source,SUM(total) views FROM growth_campaign_daily WHERE day>=? AND event=? GROUP BY campaign,source ORDER BY views DESC LIMIT 25').all(from,'pageview'),
  recent15m: db.prepare('SELECT COALESCE(SUM(total),0) views FROM growth_minute WHERE minute >= ?').get(new Date(Date.now()-15*60000).toISOString().slice(0,16)).views,
  recent5m: db.prepare('SELECT COALESCE(SUM(total),0) views FROM growth_minute WHERE minute >= ?').get(new Date(Date.now()-5*60000).toISOString().slice(0,16)).views,
  recentMetricAvailable: true,

@@ -7,17 +7,31 @@
  const trackingAllowed=()=>navigator.doNotTrack!=='1'&&navigator.globalPrivacyControl!==true;
  const source=()=>{
    const q=new URLSearchParams(location.search);
-   const campaign=(q.get('utm_source')||'').toLowerCase();
-   if(/instagram|tiktok|facebook|youtube|reddit|social|x|twitter/.test(campaign))return 'social';
-   if(/newsletter|email/.test(campaign))return 'email';
-   if(/google/.test(campaign))return 'google';
-   if(/bing/.test(campaign))return 'bing';
+   const tagged=(q.get('utm_source')||'').trim().toLowerCase();
+   const channels=new Set(['tiktok','youtube','facebook','instagram','reddit','x']);
+   if(channels.has(tagged))return tagged;
+   if(tagged==='twitter')return 'x';
+   if(tagged==='social')return 'social';
+   if(/newsletter|email/.test(tagged))return 'email';
+   if(tagged==='google')return 'google';
+   if(tagged==='bing')return 'bing';
    if(!document.referrer)return 'direct';
-   try{const host=new URL(document.referrer).hostname.toLowerCase();if(host===location.hostname)return 'internal';if(/(^|\.)google\./.test(host))return 'google';if(/(^|\.)bing\.com$/.test(host))return 'bing';if(/(tiktok|instagram|facebook|reddit|youtube|twitter|x\.com)/.test(host))return 'social';return 'referral'}catch{return 'other'}
+   try{
+    const host=new URL(document.referrer).hostname.toLowerCase();
+    if(host===location.hostname)return 'internal';
+    if(/(^|\.)google\./.test(host))return 'google';
+    if(/(^|\.)bing\.com$/.test(host))return 'bing';
+    for(const [name,re] of [['tiktok',/(^|\.)tiktok\.com$/],['youtube',/(^|\.)youtu\.be$|(^|\.)youtube\.com$/],['facebook',/(^|\.)facebook\.com$|(^|\.)fb\.com$/],['instagram',/(^|\.)instagram\.com$/],['reddit',/(^|\.)reddit\.com$/],['x',/(^|\.)x\.com$|(^|\.)twitter\.com$/]])if(re.test(host))return name;
+    return 'referral';
+   }catch{return 'other'}
+ };
+ const campaign=()=>{
+  const tag=(new URLSearchParams(location.search).get('utm_campaign')||'').trim().toLowerCase();
+  return ['josie_reacts','josie_scores','josie_picks','game_day','launch_week'].includes(tag)?tag:'';
  };
  const track=event=>{
   if(!trackingAllowed())return;
-  const payload=JSON.stringify({event,path:location.pathname,source:source()});
+  const payload=JSON.stringify({event,path:location.pathname,source:source(),campaign:campaign()});
   try{const blob=new Blob([payload],{type:'application/json'});if(navigator.sendBeacon&&navigator.sendBeacon('/api/growth/track',blob))return}catch{}
   fetch('/api/growth/track',{method:'POST',headers:{'Content-Type':'application/json'},body:payload,keepalive:true,credentials:'omit'}).catch(()=>{});
  };

@@ -1,26 +1,44 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow"><title>Sports Genius Traffic | Private Admin</title>
-<link rel="stylesheet" href="/css/style.css"></head><body>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Sports Genius | Private Traffic Command Center</title>
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/growth-dashboard.css">
+</head>
+<body>
 <div class="bg-stage" aria-hidden="true"></div><div class="bg-veil" aria-hidden="true"></div>
-<header class="nav"><a class="brand" href="/">🧠 <b>THE SPORTS GENIUS</b></a><nav><a class="link" href="/matchups">Matchups</a><a class="link" href="/share-kit">Share Kit</a></nav></header>
-<main class="wrap"><section class="hero"><div class="league-tag">PRIVATE TRAFFIC REPORT</div><h1 class="display">ORGANIC TRAFFIC</h1>
-<p class="sub">Anonymous, first-party pageviews and return-action totals. This is not Google Analytics and does not identify unique visitors.</p></section>
-<section class="card"><h2>Recent site activity</h2><p id="summary-status">Checking admin access…</p><div id="summary-data" style="overflow:auto"></div>
-<p class="reason">Metrics honor Do Not Track / Global Privacy Control. Counts omit bot user agents but may include repeated visits. They do not store IP addresses, account identities, cookies or full referrers.</p></section></main>
-<footer>Private admin report · The Sports Genius</footer>
+<header class="nav"><a class="brand" href="/"><span class="mark">🧠</span><b>THE SPORTS GENIUS</b></a>
+<nav><a class="link" href="/">Site</a><a class="link" href="/scores">Scores</a><a class="link" href="/josie">Josie</a></nav></header>
+<main class="wrap traffic-shell">
+<section class="traffic-heading">
+ <div><div class="league-tag">OWNER DASHBOARD · PRIVATE</div><h1 class="display">TRAFFIC COMMAND CENTER</h1>
+ <p>Track the visits and actions we can measure—not inflated request counts or imaginary unique fans.</p></div>
+ <div class="traffic-tools"><div class="traffic-range" role="group" aria-label="Traffic reporting period">
+ <button type="button" data-range="7">7 days</button><button type="button" data-range="30" aria-pressed="true" class="selected">30 days</button>
+ </div><button type="button" class="traffic-refresh" id="traffic-refresh">↻ Refresh</button></div>
+</section>
+<p id="summary-status" class="traffic-status" role="status" aria-live="polite">Checking admin access and loading your analytics…</p>
+<div id="traffic-content" hidden>
+<section class="traffic-kpis" id="traffic-kpis" aria-label="Traffic at a glance"></section>
+<div class="traffic-layout">
+ <section class="traffic-panel traffic-chart-panel"><div class="traffic-panel-head"><div><h2>Pageviews over time</h2><p id="traffic-trend-subtitle">Daily anonymous tracked pageviews (UTC)</p></div><span id="traffic-trend-badge" class="traffic-delta"></span></div>
+ <div id="traffic-chart" class="traffic-chart" role="img" aria-label="Daily pageviews chart"></div>
+ </section>
+ <section class="traffic-panel"><div class="traffic-panel-head"><div><h2>Visitor actions</h2><p>What people actually did on site</p></div></div><div id="traffic-actions" class="traffic-actions"></div></section>
+ <section class="traffic-panel"><div class="traffic-panel-head"><div><h2>Most viewed pages</h2><p>Tracked pageviews, not unique people</p></div></div><div id="traffic-pages"></div></section>
+ <section class="traffic-panel"><div class="traffic-panel-head"><div><h2>Where visitors came from</h2><p>Campaign tags / referrer categories; direct can include unknown</p></div></div><div id="traffic-sources"></div></section>
+ <section class="traffic-panel traffic-span"><div class="traffic-panel-head"><div><h2>Josie campaign performance</h2><p>Tracked landing-page views from approved UTM campaigns</p></div></div><div id="traffic-campaigns"></div></section>
+</div>
+<section class="traffic-panel traffic-links">
+ <div class="traffic-panel-head"><div><h2>Copy your shareable campaign links</h2><p>Use the matching link with each TikTok, YouTube, Facebook or Instagram post.</p></div></div>
+ <div id="traffic-share-links" class="traffic-link-grid"></div>
+</section>
+<p class="traffic-disclaimer" id="traffic-disclaimer">First-party aggregate counts only. Includes repeat visits and may include automated browsing; excludes some privacy-protected browsers. No IP, individual account or unique visitor identification. Timezone UTC.</p>
+</div>
+</main>
+<footer>Private admin analytics · The Sports Genius · No third-party subscription required</footer>
 <script type="module" src="/js/app.js"></script>
-<script type="module">
-const el=document.querySelector('#summary-data'),status=document.querySelector('#summary-status');
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-async function run(){try{
-const token=localStorage.getItem('sg_token');
-const headers=token?{Authorization:'Bearer '+token}:{};
-const r=await fetch('/api/growth/summary?days=30',{headers});
-if(r.status===403){status.textContent='Admin access required. Sign in with an account listed in ADMIN_EMAILS.';return}
-if(!r.ok)throw Error('Metrics are unavailable');
-const d=await r.json();status.textContent='Last 30 days (UTC)';
-const table=(name,rows,k,v)=>'<h3>'+esc(name)+'</h3><table style="width:100%;text-align:left"><thead><tr><th>'+esc(k)+'</th><th>'+esc(v)+'</th></tr></thead><tbody>'+
- rows.map(x=>'<tr><td>'+esc(x[k])+'</td><td>'+esc(x[v])+'</td></tr>').join('')+'</tbody></table>';
-el.innerHTML=table('Top pages',d.byPage,'path','views')+table('Attribution sources',d.bySource,'source','views');
-}catch(e){status.textContent=e.message}}run();
-</script></body></html>
+<script defer src="/js/growth-dashboard.js"></script>
+</body></html>

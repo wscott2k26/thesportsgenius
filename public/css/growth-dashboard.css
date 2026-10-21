@@ -1,0 +1,59 @@
+/* Private traffic command center: responsive, no chart libraries and no new tracking dependencies. */
+.traffic-shell{max-width:1280px;padding-top:34px}
+.traffic-heading{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;margin:18px 0 24px}
+.traffic-heading .display{font-size:clamp(31px,4vw,48px);margin:12px 0;color:var(--ink);letter-spacing:.025em}
+.traffic-heading p,.traffic-panel-head p{color:var(--muted);line-height:1.5;margin:8px 0 0}
+.traffic-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.traffic-range{display:flex;padding:4px;border:1px solid var(--glass-brd);border-radius:13px;background:rgba(0,0,0,.4)}
+.traffic-range button,.traffic-refresh{cursor:pointer;border:0;color:var(--ink);background:transparent;border-radius:9px;padding:10px 14px;font:600 13px var(--sans)}
+.traffic-range button.selected{background:var(--gold);color:#1b150c}
+.traffic-refresh{border:1px solid var(--glass-brd);background:rgba(232,197,124,.07)}
+.traffic-status{color:var(--muted);font-size:14px;min-height:24px}
+.traffic-status.error{color:#ffb7a5}
+.traffic-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:22px 0}
+.traffic-kpi,.traffic-panel{border:1px solid rgba(232,197,124,.20);background:linear-gradient(150deg,rgba(28,37,45,.94),rgba(16,20,27,.94));border-radius:18px;box-shadow:0 12px 35px rgba(0,0,0,.28)}
+.traffic-kpi{padding:22px;min-height:135px}
+.traffic-kpi .traffic-label{color:#c1b59d;font-size:12px;letter-spacing:.08em;text-transform:uppercase;font-weight:750}
+.traffic-kpi strong{font-size:clamp(26px,3vw,38px);display:block;margin:10px 0 6px;line-height:1.1;font-variant-numeric:tabular-nums;color:#fff6e5}
+.traffic-kpi .traffic-hint{font-size:12px;color:#b5a98c;line-height:1.45}
+.traffic-kpi.traffic-highlight{border-color:rgba(232,197,124,.52);background:linear-gradient(135deg,rgba(112,82,35,.43),rgba(17,24,32,.94))}
+.traffic-layout{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(290px,1fr);gap:16px}
+.traffic-panel{padding:22px;min-width:0}
+.traffic-panel-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.traffic-panel h2{font-size:19px;line-height:1.25;margin:0;color:#fff6e5}
+.traffic-panel-head p{font-size:13px}
+.traffic-chart{display:flex;align-items:stretch;gap:4px;min-height:236px;border-bottom:1px solid rgba(232,197,124,.23);padding:4px 3px 0}
+.traffic-day{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:8px}
+.traffic-bar-wrap{height:190px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.traffic-bar{width:min(100%,27px);min-height:4px;background:linear-gradient(180deg,#f6d890,#ac7b39);border-radius:6px 6px 2px 2px;box-shadow:0 0 10px rgba(224,180,92,.15);transition:filter .12s}
+.traffic-day:hover .traffic-bar{filter:brightness(1.25)}
+.traffic-date{height:20px;font-size:10px;color:#b2a78f;white-space:nowrap}
+.traffic-delta{color:#f3d795;background:rgba(232,197,124,.13);border:1px solid rgba(232,197,124,.2);padding:6px 10px;border-radius:9px;font-size:12px;white-space:nowrap}
+.traffic-delta.negative{color:#ffb6ad}
+.traffic-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.traffic-action{padding:18px;border-radius:12px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03)}
+.traffic-action strong{font-size:29px;font-variant-numeric:tabular-nums;display:block;color:#f1d38b}
+.traffic-action span{color:#c7bda8;font-size:13px}
+.traffic-metric{margin-bottom:18px}
+.traffic-metric-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px;font-size:13px}
+.traffic-metric-name{min-width:0;overflow-wrap:anywhere}
+.traffic-metric-num{font-variant-numeric:tabular-nums;color:#f1d38b;font-weight:750}
+.traffic-meter{height:8px;background:rgba(255,255,255,.07);overflow:hidden;border-radius:9px}
+.traffic-meter span{display:block;height:100%;background:linear-gradient(90deg,#967039,#f3d795);border-radius:9px}
+.traffic-span{grid-column:1 / -1}
+.traffic-campaign-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.traffic-campaign{border:1px solid rgba(255,255,255,.09);background:rgba(255,255,255,.035);border-radius:12px;padding:15px}
+.traffic-campaign strong{font-size:14px;display:block;overflow-wrap:anywhere;margin:7px 0}
+.traffic-campaign .traffic-label{color:#b8ab8e;font-size:11px}
+.traffic-campaign .traffic-value{color:#f1d38b;font-size:24px;font-weight:750;font-variant-numeric:tabular-nums}
+.traffic-links{margin-top:16px}
+.traffic-link-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.traffic-link-item{padding:15px;border-radius:12px;background:rgba(0,0,0,.26);border:1px solid rgba(255,255,255,.08)}
+.traffic-link-item strong{display:block;margin-bottom:6px}
+.traffic-link-item code{display:block;font-size:11px;overflow-wrap:anywhere;color:#b8d5ca;line-height:1.55}
+.traffic-link-item button{margin-top:12px;cursor:pointer;background:rgba(232,197,124,.15);border:1px solid var(--glass-brd);border-radius:9px;color:#f1d38b;padding:8px 12px;font-size:12px}
+.traffic-empty{font-size:13px;color:#bdaf96;line-height:1.6}
+.traffic-disclaimer{font-size:12px;line-height:1.6;color:#b4a88f;margin:23px 0 0}
+@media(max-width:840px){.traffic-layout{grid-template-columns:1fr}.traffic-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.traffic-campaign-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:530px){.traffic-shell{padding-top:16px}.traffic-kpis,.traffic-link-grid,.traffic-campaign-grid{grid-template-columns:1fr}.traffic-panel,.traffic-kpi{padding:17px}.traffic-heading .display{font-size:29px}.traffic-chart{gap:2px}.traffic-date{font-size:9px}.traffic-day{gap:5px}.traffic-bar-wrap{height:145px}.traffic-chart{min-height:188px}}
+@media(prefers-reduced-motion:reduce){.traffic-bar{transition:none}}
