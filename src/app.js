@@ -31,6 +31,9 @@ app.use('/api', pushRouter);
 app.use('/api',growthApiRouter);
 app.use('/',growthRouter);
 
+// Browsers and crawlers requesting the legacy favicon path get our branded SVG.
+app.get('/favicon.ico', (req,res) => res.redirect(308, '/favicon.svg'));
+
 // Static frontend
 const pub = path.join(process.cwd(), 'public');
 app.use(express.static(pub, { extensions: ['html'] }));
