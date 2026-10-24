@@ -14,7 +14,7 @@ const niceDate=x=>new Date(x).toLocaleString('en-US',{timeZone:'America/New_York
 const label=k=>LEAGUES[k]?.label||k.toUpperCase();
 const link=(label,url)=>'<a class="btn-ghost" href="'+esc(url)+'" style="display:inline-block;margin:8px 8px 8px 0">'+esc(label)+' →</a>';
 const boundedFetch=(url,opts)=>fetch(url,{...opts,signal:AbortSignal.timeout(8000)});
-const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds','/tools/odds-calculator',...Object.keys(additionalGuides).map(slug=>'/guides/'+slug),'/privacy'];
+const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/josie','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds','/tools/odds-calculator',...Object.keys(additionalGuides).map(slug=>'/guides/'+slug),'/privacy'];
 function shell(title,desc,url,body,structured=null,robots='index, follow'){
  const json=structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'';
  const section=url.split("/")[2];
@@ -24,7 +24,7 @@ function shell(title,desc,url,body,structured=null,robots='index, follow'){
  '<title>'+esc(title)+'</title><meta name="description" content="'+esc(desc)+'"><meta name="robots" content="'+robots+'">'+
  '<link rel="canonical" href="'+ROOT+url+'"><meta property="og:type" content="website"><meta property="og:site_name" content="The Sports Genius">'+
  '<meta property="og:title" content="'+esc(title)+'"><meta property="og:description" content="'+esc(desc)+'"><meta property="og:url" content="'+ROOT+url+'">'+
- '<meta property="og:image" content="'+socialImage+'"><meta name="twitter:image" content="'+socialImage+'"><meta name="twitter:card" content="summary_large_image"><link rel="alternate" type="application/rss+xml" title="Sports Genius Matchups" href="/feed.xml"><link rel="stylesheet" href="/css/style.css">'+json+'</head><body>'+
+ '<meta property="og:image" content="'+socialImage+'"><meta name="twitter:image" content="'+socialImage+'"><meta name="twitter:card" content="summary_large_image"><link rel="icon" href="/favicon.svg" type="image/svg+xml"><link rel="alternate" type="application/rss+xml" title="Sports Genius Matchups" href="/feed.xml"><link rel="stylesheet" href="/css/style.css">'+json+'</head><body>'+
  '<div class="bg-stage" aria-hidden="true"></div><div class="bg-veil" aria-hidden="true"></div>'+
  '<header class="nav"><a class="brand" href="/">🧠 <b>THE SPORTS GENIUS</b></a><span class="age-badge">21+</span>'+
  '<nav><a class="link" href="/">Picks</a><a class="link" href="/scores">Scores</a><a class="link" href="/matchups">Matchups</a><a class="link" href="/guides">Guides</a><a class="link" href="/tools/odds-calculator">Odds calculator</a><a class="link" href="/teams">My Teams</a></nav>'+
