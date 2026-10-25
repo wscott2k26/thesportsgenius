@@ -1,0 +1,34 @@
+name: Sports Genius read-only dependency audit
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  inspect-production-dependencies:
+    name: Report npm vulnerabilities (no fixes or deploy)
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Inspect lockfile vulnerabilities
+        shell: bash
+        run: |
+          npm audit --omit=dev --json > /tmp/sports-genius-audit.json || true
+          node --input-type=module <<'JS'
+          import fs from 'node:fs';
+          const result=JSON.parse(fs.readFileSync('/tmp/sports-genius-audit.json','utf8'));
+          console.log('Production vulnerability counts:',JSON.stringify(result.metadata?.vulnerabilities||{}));
+          for(const [name,v] of Object.entries(result.vulnerabilities||{})){
+            console.log('PACKAGE',JSON.stringify({
+              name,severity:v.severity,isDirect:v.isDirect,
+              range:v.range,via:(v.via||[]).map(x=>typeof x==='string'?x:{name:x.name,title:x.title,range:x.range,url:x.url,source:x.source}),
+              fixAvailable:v.fixAvailable
+            }));
+          }
+          if(result.error) console.log('Audit error:',JSON.stringify({code:result.error.code,summary:result.error.summary}));
+          JS
