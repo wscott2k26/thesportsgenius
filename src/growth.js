@@ -229,7 +229,7 @@ db.exec('CREATE TABLE IF NOT EXISTS growth_campaign_daily(day TEXT NOT NULL,even
 let lastGrowthPruneAt = 0;
 const events=new Set(['pageview','share','save','calendar','copy']);
 const sources=new Set(['direct','google','bing','social','tiktok','youtube','facebook','instagram','reddit','x','referral','internal','email','other']);
-const campaignTags=new Set(['josie_reacts','josie_scores','josie_picks','game_day','launch_week']);
+const campaignTags=new Set(['josie_reacts','josie_scores','josie_picks','game_day','launch_week','sports_research_launch']);
 growthApiRouter.post('/growth/track',(req,res)=>{
  if(req.get('DNT')==='1'||req.get('Sec-GPC')==='1'||/bot|crawler|spider|headless|lighthouse/i.test(req.get('user-agent')||''))return res.sendStatus(204);
  const {event,path,source,campaign}=req.body||{};
