@@ -27,7 +27,7 @@
  };
  const campaign=()=>{
   const tag=(new URLSearchParams(location.search).get('utm_campaign')||'').trim().toLowerCase();
-  return ['josie_reacts','josie_scores','josie_picks','game_day','launch_week'].includes(tag)?tag:'';
+  return ['josie_reacts','josie_scores','josie_picks','game_day','launch_week','sports_research_launch'].includes(tag)?tag:'';
  };
  const track=event=>{
   if(!trackingAllowed())return;
