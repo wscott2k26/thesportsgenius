@@ -16,6 +16,9 @@ test('private command center has responsive dashboard modules and owner-only API
   assert.equal((await fetch(base+'/api/growth/summary?days=30')).status,403);
   const js=await (await fetch(base+'/js/growth-dashboard.js')).text();
   assert.match(js,/utm_source=tiktok/);
+  const browserClient=await (await fetch(base+'/js/growth-client.js')).text();
+  assert.match(browserClient,/sports_research_launch/, 'share-kit campaign tag must survive the browser allowlist');
+
   assert.match(js,/Josie campaign performance|byCampaign/);
  }finally{await new Promise(resolve=>server.close(resolve))}
 });
