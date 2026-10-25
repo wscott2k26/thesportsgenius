@@ -21,6 +21,8 @@ jobs:
           cache: npm
       - name: Install native dependencies
         run: npm ci --no-audit --no-fund
+      - name: Audit production dependencies (fail on high or critical)
+        run: npm audit --omit=dev --audit-level=high
       - name: Syntax check
         run: |
           node --check src/attested-records.js
