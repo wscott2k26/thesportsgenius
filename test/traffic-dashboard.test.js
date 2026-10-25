@@ -30,6 +30,9 @@ test('social attribution stores approved aggregate campaign, rejects uncontrolle
   assert.equal(ok.status,204);
   assert.ok(db.prepare("SELECT total FROM growth_campaign_daily WHERE campaign='josie_reacts' AND source='tiktok'").get()?.total>=1);
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM growth_campaign_daily WHERE campaign='fake_tracking_id_12345'").get().n,0);
+  ok=await fetch(base+'/api/growth/track',{method:'POST',headers:{'content-type':'application/json'},body:payload('sports_research_launch')});
+  assert.equal(ok.status,204);
+  assert.ok(db.prepare("SELECT total FROM growth_campaign_daily WHERE campaign='sports_research_launch' AND source='tiktok'").get()?.total>=1);
   assert.equal((await fetch(base+'/josie')).status,200);
   const landing=await (await fetch(base+'/josie')).text();
   assert.match(landing,/growth-client\.js/);
