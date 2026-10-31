@@ -55,6 +55,15 @@ export function renderNav() {
       };
       slot.appendChild(manage);
     }
+    if (u.verification_pending) {
+      const verify = document.createElement('button'); verify.className = 'btn-ghost';
+      verify.textContent = 'Verify email';
+      verify.onclick = async () => {
+        const {res, data}=await api('/api/auth/resend-verification',{method:'POST'});
+        toast(data.message || data.error || (res.ok ? 'Check your email.' : 'Please try again later.'));
+      };
+      slot.appendChild(verify);
+    }
     const out = document.createElement('button'); out.className = 'btn-ghost'; out.textContent = 'Sign out';
     out.onclick = async () => { await api('/api/auth/logout', { method: 'POST' }); localStorage.removeItem('sg_token'); location.reload(); };
     slot.appendChild(out);
@@ -103,7 +112,7 @@ async function authSubmit(kind, email, pw) {
     location.reload();
     return;
   }
-  toast(kind === 'register' ? 'Welcome to the Genius 🏆' : 'Signed in');
+  toast(data.user?.verification_pending ? 'Signed in. Verify your email before upgrading to Premium.' : (kind === 'register' ? 'Welcome to the Genius 🏆' : 'Signed in'));
 }
 
 export function wireAuthModal() {
