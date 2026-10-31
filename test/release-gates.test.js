@@ -25,7 +25,7 @@ describe('subscription security',()=>{
    globalThis.fetch=(url,opts={})=>{
      if(String(url).startsWith('https://api.stripe.com/v1/subscriptions?')){
        stripeReads++;
-       assert.match(String(url),/customer=cus_release_fake/);
+       assert.match(String(url),/customer=cus_releasefake/);
        const sub={id:'sub_release_fake',status:actualStatus,
          current_period_end:1940000000,
          items:{data:[{price:{id:'price_release_test'},current_period_end:1940000000}]}};
@@ -34,9 +34,9 @@ describe('subscription security',()=>{
      return realFetch(url,opts);
    };
    const user=db.prepare("INSERT INTO users(email,pass_hash,stripe_customer_id) VALUES (?,?,?)")
-     .run('release-test@example.invalid','unused','cus_release_fake');
+     .run('release-test@example.invalid','unused','cus_releasefake');
    async function send(id,status,type='customer.subscription.updated'){
-     const event={id,type,data:{object:{customer:'cus_release_fake',id:'sub_release_fake',status,
+     const event={id,type,data:{object:{customer:'cus_releasefake',id:'sub_release_fake',status,
        current_period_end:1940000000,
        items:{data:[{price:{id:'price_release_test'},current_period_end:1940000000}]}}}};
      const payload=JSON.stringify(event);
