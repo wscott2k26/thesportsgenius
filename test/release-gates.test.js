@@ -9,31 +9,64 @@ before(async()=>{await new Promise(resolve=>{server=app.listen(0,resolve)});base
 after(()=>new Promise(resolve=>server.close(resolve)));
 describe('subscription security',()=>{
  it('keeps live checkout gated without Stripe keys',async()=>{
-  const r=await fetch(base+'/api/billing');
-  assert.equal(r.status,200);assert.equal((await r.json()).checkoutEnabled,false);
-  const checkout=await fetch(base+'/api/billing/checkout',{method:'POST'});
-  assert.equal(checkout.status,401);
+   const r=await fetch(base+'/api/billing');
+   assert.equal(r.status,200);assert.equal((await r.json()).checkoutEnabled,false);
+   const checkout=await fetch(base+'/api/billing/checkout',{method:'POST'});
+   assert.equal(checkout.status,401);
  });
- it('rejects unsigned Stripe webhooks and accepts signed subscription events',async()=>{
-  const secret='whsec_release_test';
-  process.env.STRIPE_WEBHOOK_SECRET=secret;
-  const user=db.prepare("INSERT INTO users(email,pass_hash,stripe_customer_id) VALUES (?,?,?)").run('release-test@example.invalid','unused','cus_release_fake');
-  const event={id:'evt_release_test',type:'customer.subscription.updated',
-   data:{object:{customer:'cus_release_fake',id:'sub_release_fake',status:'active',current_period_end:1940000000}}};
-  const payload=JSON.stringify(event);
-  const bad=await fetch(base+'/api/stripe/webhook',{method:'POST',headers:{'content-type':'application/json','stripe-signature':'t=123,v1=abc'},body:payload});
-  assert.equal(bad.status,400);
-  const t=Math.floor(Date.now()/1000);
-  const signature=createHmac('sha256',secret).update(t+'.'+payload).digest('hex');
-  const opts={method:'POST',headers:{'content-type':'application/json','stripe-signature':`t=${t},v1=${signature}`},body:payload};
-  const valid=await fetch(base+'/api/stripe/webhook',opts);
-  assert.equal(valid.status,200);
-  const row=db.prepare('SELECT premium_until FROM users WHERE id=?').get(user.lastInsertRowid);
-  assert.ok(new Date(row.premium_until)>new Date());
-  const again=await fetch(base+'/api/stripe/webhook',opts);
-  assert.equal(again.status,200);
-  assert.equal(db.prepare('SELECT count(*) AS n FROM stripe_events WHERE id=?').get(event.id).n,1);
-  delete process.env.STRIPE_WEBHOOK_SECRET;
+ it('rejects unsigned events and reconciles out-of-order updates with current Stripe state',async()=>{
+   const secret='whsec_release_test';
+   const prior={ webhook:process.env.STRIPE_WEBHOOK_SECRET, key:process.env.STRIPE_SECRET_KEY, price:process.env.STRIPE_PRICE_ID };
+   const realFetch=globalThis.fetch;
+   process.env.STRIPE_WEBHOOK_SECRET=secret;
+   process.env.STRIPE_SECRET_KEY='sk_live_ISOLATED_MOCK_DO_NOT_USE';
+   process.env.STRIPE_PRICE_ID='price_release_test';
+   let actualStatus='active', stripeReads=0;
+   globalThis.fetch=(url,opts={})=>{
+     if(String(url).startsWith('https://api.stripe.com/v1/subscriptions?')){
+       stripeReads++;
+       assert.match(String(url),/customer=cus_releasefake/);
+       const sub={id:'sub_release_fake',status:actualStatus,
+         current_period_end:1940000000,
+         items:{data:[{price:{id:'price_release_test'},current_period_end:1940000000}]}};
+       return Promise.resolve(new Response(JSON.stringify({data:[sub],has_more:false}),{status:200,headers:{'content-type':'application/json'}}));
+     }
+     return realFetch(url,opts);
+   };
+   const user=db.prepare("INSERT INTO users(email,pass_hash,stripe_customer_id) VALUES (?,?,?)")
+     .run('release-test@example.invalid','unused','cus_releasefake');
+   async function send(id,status,type='customer.subscription.updated'){
+     const event={id,type,data:{object:{customer:'cus_releasefake',id:'sub_release_fake',status,
+       current_period_end:1940000000,
+       items:{data:[{price:{id:'price_release_test'},current_period_end:1940000000}]}}}};
+     const payload=JSON.stringify(event);
+     const t=Math.floor(Date.now()/1000);
+     const sig=createHmac('sha256',secret).update(t+'.'+payload).digest('hex');
+     return fetch(base+'/api/stripe/webhook',{method:'POST',
+       headers:{'content-type':'application/json','stripe-signature':'t='+t+',v1='+sig},body:payload});
+   }
+   try{
+     const invalid=await fetch(base+'/api/stripe/webhook',{method:'POST',headers:{'content-type':'application/json','stripe-signature':'t=123,v1=abc'},body:'{}'});
+     assert.equal(invalid.status,400);
+     assert.equal((await send('evt_release_active','active')).status,200);
+     let row=db.prepare('SELECT premium_until FROM users WHERE id=?').get(user.lastInsertRowid);
+     assert.ok(new Date(row.premium_until)>new Date());
+     actualStatus='canceled';
+     assert.equal((await send('evt_release_cancel','canceled','customer.subscription.deleted')).status,200);
+     row=db.prepare('SELECT premium_until FROM users WHERE id=?').get(user.lastInsertRowid);
+     assert.equal(row.premium_until,null);
+     // Delayed CREATED event cannot resurrect a canceled subscription.
+     assert.equal((await send('evt_release_delayed_created','active','customer.subscription.created')).status,200);
+     row=db.prepare('SELECT premium_until FROM users WHERE id=?').get(user.lastInsertRowid);
+     assert.equal(row.premium_until,null);
+     assert.equal((await send('evt_release_active','active')).status,200);
+     assert.equal(db.prepare('SELECT count(*) AS n FROM stripe_events WHERE id=?').get('evt_release_active').n,1);
+     assert.equal(stripeReads,3,'duplicate events must not call Stripe again');
+   }finally{
+     globalThis.fetch=realFetch;
+     for(const [key,val] of Object.entries({STRIPE_WEBHOOK_SECRET:prior.webhook,STRIPE_SECRET_KEY:prior.key,STRIPE_PRICE_ID:prior.price}))
+       if(val===undefined)delete process.env[key];else process.env[key]=val;
+   }
  });
 });
 describe('prediction integrity',()=>{
