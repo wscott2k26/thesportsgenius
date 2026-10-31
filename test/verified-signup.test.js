@@ -1,6 +1,7 @@
 // Isolated verification test: no real emails, accounts, or Stripe calls.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import bcrypt from 'bcryptjs';
 
 test('production-style signup verifies ownership before issuing a session', async () => {
   const originals = {
@@ -22,7 +23,17 @@ test('production-style signup verifies ownership before issuing a session', asyn
     }
     return originalFetch(url,opts);
   };
+  // Seed an account and session using the previous schema BEFORE auth migrations run.
+  const {db}=await import('../src/db.js');
+  const legacyEmail='legacy-'+process.pid+'@example.invalid';
+  const legacyPassword='legacy-account-password!';
+  const oldUser=db.prepare('INSERT INTO users(email,pass_hash) VALUES (?,?)')
+    .run(legacyEmail,await bcrypt.hash(legacyPassword,10));
+  const legacyToken='d'.repeat(64);
+  db.prepare("INSERT INTO sessions(token,user_id,expires_at) VALUES (?,?,datetime('now','+1 day'))")
+    .run(legacyToken,oldUser.lastInsertRowid);
   const {default:app} = await import('../src/app.js');
+  assert.equal(db.prepare('SELECT legacy_login_allowed AS flag FROM users WHERE id=?').get(oldUser.lastInsertRowid).flag,1,'existing accounts recognized once');
   const server=await new Promise(resolve=>{const s=app.listen(0,'127.0.0.1',()=>resolve(s))});
   const base='http://127.0.0.1:'+server.address().port;
   const email='verify-'+process.pid+'@example.invalid';
@@ -63,6 +74,21 @@ test('production-style signup verifies ownership before issuing a session', asyn
     assert.equal((await request('/api/auth/me',{token:logged.data.token})).response.status,200);
     const checkout=await request('/api/billing/checkout',{method:'POST',token:logged.data.token});
     assert.equal(checkout.response.status,503,'live checkout remains disabled in isolated test');
+
+    const oldSession=await request('/api/auth/me',{token:legacyToken});
+    assert.equal(oldSession.response.status,200,'existing sessions remain valid');
+    assert.equal(oldSession.data.user.verification_pending,true);
+    const oldLogin=await request('/api/auth/login',{method:'POST',body:{email:legacyEmail,password:legacyPassword}});
+    assert.equal(oldLogin.response.status,200,'legacy password login remains available');
+    assert.match(oldLogin.data.token,/^[0-9a-f]{64}$/);
+    assert.equal(oldLogin.data.user.verification_pending,true);
+    const legacyCheckout=await request('/api/billing/checkout',{method:'POST',token:oldLogin.data.token});
+    assert.equal(legacyCheckout.response.status,403,'existing unverified accounts still cannot start Premium checkout');
+    const pending=db.prepare('SELECT legacy_login_allowed AS flag FROM users WHERE email=?').get(email);
+    assert.equal(pending.flag,0,'new signups must never inherit legacy status');
+    assert.ok(sent.some(e=>e.to?.includes(legacyEmail)),'existing customer gets verification email');
+    const resent=await request('/api/auth/resend-verification',{method:'POST',token:oldLogin.data.token});
+    assert.equal(resent.response.status,429,'legacy resend is rate limited');
   } finally {
     await new Promise(resolve=>server.close(resolve));
     globalThis.fetch=originalFetch;
