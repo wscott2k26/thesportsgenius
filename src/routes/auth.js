@@ -22,6 +22,20 @@ for (const [column, type] of [
   if (!columns.includes(column)) db.exec('ALTER TABLE users ADD COLUMN ' + column + ' ' + type);
 }
 
+// One-time, idempotent legacy migration: preserve existing sessions and
+// password-based login. New users remain unverified and cannot sign in.
+// Never mark old users as email-verified or let them start Premium checkout.
+{
+  const columns = db.prepare('PRAGMA table_info(users)').all().map(x => x.name);
+  if (!columns.includes('legacy_login_allowed')) {
+    db.transaction(() => {
+      db.exec('ALTER TABLE users ADD COLUMN legacy_login_allowed INTEGER NOT NULL DEFAULT 0');
+      db.prepare('UPDATE users SET legacy_login_allowed=1 WHERE email_verified_at IS NULL').run();
+    })();
+  }
+}
+const legacyAllowed = user => user?.legacy_login_allowed === 1;
+
 async function sendVerification(user) {
   if (!verificationMailConfigured()) throw new Error('email provider not configured');
   const last = Date.parse(user.verification_sent_at || '') || 0;
@@ -66,6 +80,7 @@ router.get('/verify-email', (req, res) => {
 
 function publicUser(u) {
   return { id: u.id, email: u.email, premium: isPremium(u), premium_until: u.premium_until || null,
+           verification_pending: verificationRequired() && !u.email_verified_at,
            has_openai_key: !!u.openai_key, admin: isAdmin(u.email) };
 }
 
@@ -83,7 +98,7 @@ export function authMiddleware(req, res, next) {
   if (token) {
     const s = db.prepare(`SELECT s.*, u.* FROM sessions s JOIN users u ON u.id = s.user_id
       WHERE s.token = ? AND s.expires_at > datetime('now')`).get(token);
-    if (s && (!verificationRequired() || s.email_verified_at)) req.user = s;
+    if (s && (!verificationRequired() || s.email_verified_at || legacyAllowed(s))) req.user = s;
   }
   next();
 }
@@ -127,14 +142,26 @@ router.post('/login', async (req, res) => {
   if (verificationRequired() && !user.email_verified_at) {
     try {
       await sendVerification(user); // Only after correct password; rate limited.
-      return res.status(403).json({ verification_required: true, error: 'Email verification required. Check your inbox or try signing in again in a minute.' });
     } catch {
-      return res.status(503).json({ verification_required: true, error: 'Email verification is temporarily unavailable. Please try again later.' });
+      if (!legacyAllowed(user)) return res.status(503).json({ verification_required: true, error: 'Email verification is temporarily unavailable. Please try again later.' });
     }
+    if (!legacyAllowed(user)) return res.status(403).json({ verification_required: true, error: 'Email verification required. Check your inbox or try signing in again in a minute.' });
   }
   const token = newToken(user.id);
   res.cookie('sg_token', token, { httpOnly: true, secure: process.env.NODE_ENV === 'production', sameSite: 'lax', maxAge: 30 * 864e5 });
   res.json({ token, user: publicUser(user) });
+});
+
+// Existing account holders can resend from their already authenticated session.
+router.post('/resend-verification', async (req,res) => {
+  if(!req.user)return res.sendStatus(401);
+  if(req.user.email_verified_at)return res.json({ok:true,already_verified:true});
+  try {
+    const sent=await sendVerification(req.user);
+    return res.status(sent?200:429).json({ok:sent,message:sent?'Verification email sent. Check your inbox.':'Please wait a minute before trying again.'});
+  } catch {
+    return res.status(503).json({error:'Verification email is temporarily unavailable.'});
+  }
 });
 
 router.post('/logout', (req, res) => {
