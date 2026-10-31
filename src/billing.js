@@ -127,7 +127,7 @@ stripeWebhookRouter.post('/stripe/webhook', raw({type:'application/json',limit:'
 });
 billingRouter.post('/billing/checkout',async(req,res)=>{
  if(!req.user)return res.status(401).json({error:'Sign in first'});
- if(process.env.NODE_ENV==='production' && !req.user.email_verified_at)return res.status(403).json({error:'Verify your email before upgrading'});
+ if((process.env.NODE_ENV==='production'||process.env.EMAIL_VERIFICATION_REQUIRED==='1') && !req.user.email_verified_at)return res.status(403).json({error:'Verify your email before upgrading'});
  if(isPremium(req.user))return res.status(409).json({error:'Premium is already active. Manage your plan instead.'});
  if(!configured())return res.status(503).json({error:'Live Stripe checkout is not yet configured'});
  try{
