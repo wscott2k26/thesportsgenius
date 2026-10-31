@@ -89,6 +89,11 @@ export function closeAuthModal() { document.getElementById('auth-modal')?.classL
 
 async function authSubmit(kind, email, pw) {
   const { res, data } = await api(`/api/auth/${kind}`, { method: 'POST', body: JSON.stringify({ email, password: pw }) });
+  if (data.verification_required) {
+    closeAuthModal();
+    toast(data.message || data.error || 'Check your email for the verification link before signing in.');
+    return;
+  }
   if (!res.ok) throw new Error(data.error || 'failed');
   localStorage.setItem('sg_token', data.token);
   closeAuthModal();
