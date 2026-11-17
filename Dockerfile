@@ -5,6 +5,8 @@ COPY package*.json ./
 RUN npm ci --omit=dev
 COPY public/ ./public/
 COPY src/ ./src/
+# The opt-in EyesOnYourAI telemetry module imports the server-only SDK.
+COPY sdk/ ./sdk/
 # Fail the image build before release if any backend test fails. Only an
 # ephemeral in-memory SQLite database is used; live /data is not touched.
 COPY test/ ./test/
