@@ -7,6 +7,7 @@ import { router as apiRouter } from './routes/api.js';
 import { billingRouter,stripeWebhookRouter } from './billing.js';
 import { pushRouter } from './push.js';
 import {growthRouter,growthApiRouter} from './growth.js';
+import { createEyesTelemetryMiddleware } from './eyes-telemetry.js';
 
 export const app = express();
 // Consolidate duplicate public hosts for Google while preserving POST/webhook routing.
@@ -23,6 +24,8 @@ app.use('/api',stripeWebhookRouter);
 app.use(express.json({ limit: '256kb' }));
 app.use(cookieParser());
 app.use(authMiddleware);
+// Explicitly opt-in only; no user data or request paths leave this service.
+app.use(createEyesTelemetryMiddleware());
 app.use('/api',billingRouter);
 
 app.use('/api/auth', authRouter);

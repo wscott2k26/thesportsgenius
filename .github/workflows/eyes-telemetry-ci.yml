@@ -1,0 +1,32 @@
+name: Sports Genius optional Eyes telemetry CI
+
+on:
+  push:
+    branches:
+      - feature/eyesonyourai-optin-metrics-20261117
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        node: ['22', '24']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: node --check src/eyes-telemetry.js
+      - run: node --check sdk/intelligence-client.mjs
+      - run: npm test
