@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free Sports Matchup Research Checklist & Worksheet | Sports Genius</title>
+<meta name="description" content="Use a free sports matchup research worksheet to organize records, injuries, rest, home/away context, recent form, market movement, and source checks before forming an opinion.">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<link rel="canonical" href="https://thesportsgenius.com/matchup-research-toolkit">
+<meta property="og:type" content="website"><meta property="og:site_name" content="The Sports Genius">
+<meta property="og:title" content="Free Sports Matchup Research Checklist & Worksheet">
+<meta property="og:description" content="A practical, repeatable worksheet for researching a game before you form an opinion.">
+<meta property="og:url" content="https://thesportsgenius.com/matchup-research-toolkit">
+<meta name="twitter:card" content="summary">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/style.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Sports Matchup Research Toolkit","url":"https://thesportsgenius.com/matchup-research-toolkit","applicationCategory":"SportsApplication","operatingSystem":"Web","isAccessibleForFree":true,"description":"A free in-browser worksheet for organizing sports matchup research before forming an opinion.","publisher":{"@type":"Organization","name":"The Sports Genius","url":"https://thesportsgenius.com/"}}</script>
+<style>
+.tool-shell{max-width:980px;margin:0 auto;padding:34px 18px 80px}.tool-hero{padding:30px 0 18px}.tool-hero h1{font-family:var(--serif);font-size:clamp(34px,6vw,62px);line-height:1.06;color:var(--gold);margin:12px 0}.tool-hero p{max-width:760px;color:var(--ink);opacity:.9;line-height:1.7}
+.tool-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.research-card{background:rgba(8,11,16,.84)}.research-card h2{font-size:1.02rem;color:var(--gold);margin:0 0 7px}.research-card p{font-size:.82rem;color:var(--muted);line-height:1.55;min-height:48px}.research-card label{display:flex;gap:10px;align-items:flex-start;font-size:.84rem;line-height:1.45;margin-top:10px}.research-card input[type=checkbox]{margin-top:3px;accent-color:var(--gold)}
+.matchup-fields{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:18px 0}.matchup-fields input,.matchup-fields select,.notes{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--glass-brd);border-radius:12px;padding:12px 14px;color:var(--ink);font:inherit}.notes{min-height:120px;resize:vertical}
+.tool-actions{display:flex;gap:10px;flex-wrap:wrap;margin:20px 0}.tool-result{display:none;margin-top:18px}.tool-result.show{display:block}.completion{font-size:3rem;font-weight:800;color:var(--gold)}.meter{height:9px;background:rgba(255,255,255,.1);border-radius:999px;overflow:hidden;margin:12px 0}.meter i{height:100%;display:block;width:0;background:linear-gradient(90deg,var(--gold-deep),var(--gold));border-radius:999px;transition:width .35s}.summary-box{white-space:pre-wrap;background:rgba(0,0,0,.35);border:1px solid var(--glass-brd);padding:16px;border-radius:12px;color:var(--ink);font:13px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace}
+@media(max-width:700px){.tool-grid,.matchup-fields{grid-template-columns:1fr}.research-card p{min-height:0}}
+</style>
+</head>
+<body>
+<div class="bg-stage" aria-hidden="true"></div><div class="bg-veil" aria-hidden="true"></div>
+<header class="nav"><a class="brand" href="/"><span class="mark">🧠</span><b>THE SPORTS GENIUS</b></a><span class="age-badge">21+</span><nav><a class="link" href="/">Picks</a><a class="link" href="/scores">Scores</a><a class="link active" href="/matchup-research-toolkit">Research Tool</a><a class="link" href="/history">History</a><a class="link" href="/chat">Chat</a></nav></header>
+<main class="tool-shell">
+<section class="tool-hero"><span class="badge"><span class="check">✓</span> Free research worksheet · no signup required</span><h1>Research the matchup before you chase the headline.</h1><p>Use this repeatable checklist to organize the basics: team quality, availability, scheduling context, recent form, venue, market movement, and source quality. It measures <strong>research completeness</strong> — not whether a pick will win.</p></section>
+
+<section class="card">
+<div class="league-tag">MATCHUP</div>
+<div class="matchup-fields"><input id="away" placeholder="Away team"><input id="home" placeholder="Home team"><select id="league"><option value="">League / sport</option><option>NFL</option><option>NBA</option><option>WNBA</option><option>MLB</option><option>NCAAF</option><option>NCAAB</option><option>Other</option></select><input id="date" type="date" aria-label="Game date"></div>
+</section>
+
+<form id="researchForm">
+<div class="tool-grid" style="margin-top:14px">
+<article class="card research-card"><h2>Team strength & record</h2><p>Compare overall and situational records instead of relying on one headline stat.</p><label><input type="checkbox" name="record" value="0"><span>Checked overall records / standings</span></label><label><input type="checkbox" name="record" value="1"><span>Checked home and away splits</span></label></article><article class="card research-card"><h2>Availability</h2><p>Confirm injuries, suspensions, probable starters, and late status changes from current sources.</p><label><input type="checkbox" name="availability" value="0"><span>Checked injury / availability reports</span></label><label><input type="checkbox" name="availability" value="1"><span>Confirmed likely starters or key absences</span></label></article><article class="card research-card"><h2>Rest & travel</h2><p>Back-to-backs, short rest, travel and schedule density can change the context of a matchup.</p><label><input type="checkbox" name="schedule" value="0"><span>Checked rest days / schedule density</span></label><label><input type="checkbox" name="schedule" value="1"><span>Checked travel or venue context</span></label></article><article class="card research-card"><h2>Recent form</h2><p>Review recent performance while avoiding tiny-sample overreaction.</p><label><input type="checkbox" name="form" value="0"><span>Reviewed recent games or form</span></label><label><input type="checkbox" name="form" value="1"><span>Compared recent form with season-long baseline</span></label></article><article class="card research-card"><h2>Matchup factors</h2><p>Look for style, pace, efficiency, unit-vs-unit, weather or other sport-specific interactions.</p><label><input type="checkbox" name="matchup" value="0"><span>Reviewed matchup-specific strengths / weaknesses</span></label><label><input type="checkbox" name="matchup" value="1"><span>Checked relevant venue or weather factors</span></label></article><article class="card research-card"><h2>Market context</h2><p>If you examine odds or lines, record what changed and when rather than treating a screenshot as permanent.</p><label><input type="checkbox" name="market" value="0"><span>Checked current market line from a real source</span></label><label><input type="checkbox" name="market" value="1"><span>Noted meaningful movement or confirmed no material change</span></label></article><article class="card research-card"><h2>Source quality</h2><p>Separate official/team/league data from rumors and secondary commentary.</p><label><input type="checkbox" name="sources" value="0"><span>Used at least one authoritative source</span></label><label><input type="checkbox" name="sources" value="1"><span>Timestamped or noted when the information was checked</span></label></article><article class="card research-card"><h2>Decision discipline</h2><p>Write down what would change your view and avoid pretending uncertainty disappeared.</p><label><input type="checkbox" name="discipline" value="0"><span>Recorded at least one uncertainty / missing data point</span></label><label><input type="checkbox" name="discipline" value="1"><span>Wrote a reason to pass or revisit if evidence changes</span></label></article>
+</div>
+<section class="card" style="margin-top:14px"><div class="league-tag">YOUR NOTES</div><p class="sec-sub" style="margin-top:8px">Keep the reasoning separate from the result. That makes it easier to review whether the process was sound later.</p><textarea id="notes" class="notes" placeholder="Example: Home team has the stronger season baseline, but starting guard status is still uncertain. Re-check 60 minutes before tip."></textarea></section>
+<div class="tool-actions"><button class="btn-gold" type="submit">Score research completeness</button><button class="btn-ghost" type="reset">Reset</button><button class="btn-ghost" id="copyBtn" type="button">Copy research summary</button></div>
+</form>
+
+<section class="card tool-result" id="toolResult" aria-live="polite"><div class="league-tag">RESEARCH COMPLETENESS</div><div><span class="completion" id="pct">0%</span></div><div class="meter"><i id="meterBar"></i></div><p id="resultText" class="reason"></p><h2 class="sec-title" style="font-size:24px;margin-top:22px">Shareable research summary</h2><div class="summary-box" id="summary"></div><div class="tool-actions"><a class="btn-gold" href="/matchups">Open matchup research</a><a class="btn-ghost" href="/scores">Check live scores</a><a class="btn-ghost" href="/history">Review recorded history</a></div></section>
+
+<section class="card" style="margin-top:18px"><div class="league-tag">WHY THIS TOOL EXISTS</div><h2 class="sec-title" style="font-size:28px;margin-top:12px">A repeatable process beats memory.</h2><p class="reason">Research gets sloppy when people remember only the factors that support the opinion they already wanted. A simple checklist creates a record of what you actually checked, what is still unknown, and what would make you change your mind. Sports Genius uses data-driven models and transparent records, but no model removes uncertainty.</p></section>
+<p class="disclaimer">For entertainment and research organization only. Not gambling advice. No checklist can guarantee an outcome.</p>
+</main>
+<footer>21+ · Gambling problem? Call or text 1-800-GAMBLER · The Sports Genius · For entertainment. Not gambling advice.</footer>
+<script>
+const boxes=[...document.querySelectorAll('input[type="checkbox"]')];
+function buildSummary(){
+ const away=document.getElementById("away").value.trim()||"Away team",home=document.getElementById("home").value.trim()||"Home team",league=document.getElementById("league").value||"Sport",date=document.getElementById("date").value||"Date not set";
+ const checked=boxes.filter(b=>b.checked).length,total=boxes.length,p=Math.round(checked/total*100),notes=document.getElementById("notes").value.trim();
+ const missing=[...new Set(boxes.filter(b=>!b.checked).map(b=>b.name))];
+ return {p,text:`SPORTS GENIUS MATCHUP RESEARCH\n${away} @ ${home} · ${league} · ${date}\nResearch completeness: ${p}% (${checked}/${total} checks)\nOpen areas: ${missing.length?missing.join(", "):"none recorded"}\nNotes: ${notes||"No notes added."}\n\nCompleteness is not a prediction or guarantee.`};
+}
+document.getElementById("researchForm").addEventListener("submit",e=>{e.preventDefault();const r=buildSummary();document.getElementById("pct").textContent=r.p+"%";document.getElementById("meterBar").style.width=r.p+"%";document.getElementById("resultText").textContent=r.p<50?"You still have major context gaps. Slow down and fill the missing areas before forming a strong opinion.":r.p<80?"Good start. The remaining unchecked areas are the first places to look before you lock in a view.":"You documented most of the core research areas. Keep the uncertainties visible and re-check time-sensitive information close to game time.";document.getElementById("summary").textContent=r.text;document.getElementById("toolResult").classList.add("show");document.getElementById("toolResult").scrollIntoView({behavior:"smooth",block:"start"});});
+document.getElementById("researchForm").addEventListener("reset",()=>document.getElementById("toolResult").classList.remove("show"));
+document.getElementById("copyBtn").addEventListener("click",async()=>{const r=buildSummary();try{await navigator.clipboard.writeText(r.text);document.getElementById("copyBtn").textContent="Copied ✓";setTimeout(()=>document.getElementById("copyBtn").textContent="Copy research summary",1400);}catch{alert("Copy unavailable in this browser.");}});
+</script>
+<script type="module" src="/js/app.js"></script>\n<script defer src="/js/growth-client.js"></script>
+</body></html>
