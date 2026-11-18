@@ -61,5 +61,5 @@ document.getElementById("researchForm").addEventListener("submit",e=>{e.preventD
 document.getElementById("researchForm").addEventListener("reset",()=>document.getElementById("toolResult").classList.remove("show"));
 document.getElementById("copyBtn").addEventListener("click",async()=>{const r=buildSummary();try{await navigator.clipboard.writeText(r.text);document.getElementById("copyBtn").textContent="Copied ✓";setTimeout(()=>document.getElementById("copyBtn").textContent="Copy research summary",1400);}catch{alert("Copy unavailable in this browser.");}});
 </script>
-<script type="module" src="/js/background.js"></script>
+<script type="module" src="/js/app.js"></script>\n<script defer src="/js/growth-client.js"></script>
 </body></html>
