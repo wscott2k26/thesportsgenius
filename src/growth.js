@@ -14,7 +14,7 @@ const niceDate=x=>new Date(x).toLocaleString('en-US',{timeZone:'America/New_York
 const label=k=>LEAGUES[k]?.label||k.toUpperCase();
 const link=(label,url)=>'<a class="btn-ghost" href="'+esc(url)+'" style="display:inline-block;margin:8px 8px 8px 0">'+esc(label)+' →</a>';
 const boundedFetch=(url,opts)=>fetch(url,{...opts,signal:AbortSignal.timeout(8000)});
-const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/josie','/matchups','/guides','/guides/matchup-research','/guides/understanding-odds','/tools/odds-calculator',...Object.keys(additionalGuides).map(slug=>'/guides/'+slug),'/privacy'];
+const staticLinks=['/','/scores','/history','/teams','/offers','/alerts','/splits','/photo-credits','/josie','/matchups','/matchup-research-toolkit','/guides','/guides/matchup-research','/guides/understanding-odds','/tools/odds-calculator',...Object.keys(additionalGuides).map(slug=>'/guides/'+slug),'/privacy'];
 function shell(title,desc,url,body,structured=null,robots='index, follow'){
  const json=structured?'<script type="application/ld+json">'+JSON.stringify(structured).replace(/</g,'\\u003c')+'</script>':'';
  const section=url.split("/")[2];
@@ -66,7 +66,7 @@ growthRouter.get('/matchups',async(req,res)=>{
  const body='<section class="hero"><div class="league-tag">GAME-DAY RESEARCH</div><h1 class="display">SPORTS MATCHUPS</h1>'+
  '<p class="sub">Live and recent game information from ESPN: team records, game times, venues, scores and reported broadcasters. This is not a promise or forecast.</p></section>'+
  '<section class="card"><h2>Follow the games with context</h2><p>Use the game pages below to research each matchup, share an individual game or save it for later.</p>'+
- link('Free sports research guides','/guides')+link('Follow teams and get reminders','/teams')+link('Saved games','/saved-games')+'</section>'+
+ link('Free matchup research checklist','/matchup-research-toolkit')+link('Free sports research guides','/guides')+link('Follow teams and get reminders','/teams')+link('Saved games','/saved-games')+'</section>'+
  (sections||'<section class="card" style="margin-top:20px">No recent or upcoming games are available from the source right now. '+link('Check scores','/scores')+'</section>');
  res.set('Cache-Control','public, max-age=120').send(shell('Current NFL, NBA, MLB, NHL and NCAA Matchups | Sports Genius',
  'Find real game schedules, team records, recent scores and TV listings from the NFL, NBA, NHL, MLB and NCAA.', '/matchups',body));
